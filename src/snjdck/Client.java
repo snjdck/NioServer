@@ -5,14 +5,15 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import snjdck.core.IGameWorld;
+import snjdck.core.IPacket;
 import snjdck.core.IoSession;
-import snjdck.util.Amf3;
 
 public class Client implements IoSession
 {
@@ -26,6 +27,8 @@ public class Client implements IoSession
 		
 		recvBuffer = ByteBuffer.allocate(0x20000);
 		sendBuffer = ByteBuffer.allocate(0x10000);
+		
+		nextPacket = new Packet();
 	}
 	
 	public int getID()
@@ -65,31 +68,31 @@ public class Client implements IoSession
 			recvBuffer.flip();
 			readPacket();
 		}else{
-			logger.log(Level.INFO, "读取数据长度为0!");
+			logger.info("读取数据长度为0!");
 		}
 	}
 	
 	private void readPacket()
 	{
-		if(recvBuffer.remaining() < 4){
+		if(recvBuffer.remaining() < nextPacket.getHeadSize()){
 			resetRecvBuffer();
 			return;
 		}
 		
 		recvBuffer.mark();
-		final int bodySize = recvBuffer.getInt();
+		nextPacket.readHead(recvBuffer);
 		
-		if(recvBuffer.remaining() < bodySize){
+		if(recvBuffer.remaining() < nextPacket.getBodySize()){
 			recvBuffer.reset();
 			resetRecvBuffer();
 			return;
 		}
 		
-		byte[] buffer = new byte[bodySize];
-		recvBuffer.get(buffer);
-		HashMap<String, Object> obj = (HashMap<String, Object>) amf3.decode(buffer);
+		nextPacket.readBody(recvBuffer);
+		HashMap<String, Object> obj = (HashMap<String, Object>) nextPacket.getBody();
 		logger.info("recv msg:" + obj.get("msg"));
 		
+		nextPacket = new Packet();
 		readPacket();
 	}
 	
@@ -125,14 +128,13 @@ public class Client implements IoSession
 		}
 	}
 	
-	private final Amf3 amf3 = new Amf3();
+	private IPacket nextPacket;
 	
 	private final IGameWorld gameWorld;
 	private final SelectionKey selectionKey;
 	
+	private final List<String> sendQueue = new LinkedList<String>();
 	private boolean isSending;
-	
-	private ArrayList<String> sendQueue = new ArrayList<String>();
 	
 	private final ByteBuffer recvBuffer;
 	private final ByteBuffer sendBuffer;
