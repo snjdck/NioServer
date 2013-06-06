@@ -5,7 +5,9 @@ import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class ClientManager
+import snjdck.core.IClientManager;
+
+public class ClientManager implements IClientManager
 {
 	private static final Logger logger = Logger.getLogger(ClientManager.class.getName());
 	
@@ -14,12 +16,14 @@ public class ClientManager
 		clientList = new ArrayList<Client>();
 	}
 	
+	@Override
 	public void addClient(Client client)
 	{
 		clientList.add(client);
 		logger.log(Level.INFO, "add client");
 	}
 	
+	@Override
 	public void removeClient(Client client)
 	{
 		clientList.remove(client);

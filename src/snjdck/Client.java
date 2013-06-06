@@ -10,16 +10,18 @@ import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import snjdck.core.IGameWorld;
+import snjdck.core.IoSession;
 import snjdck.util.Amf3;
 
-public class Client
+public class Client implements IoSession
 {
 	private static final Logger logger = Logger.getLogger(Client.class.getName());
 	static private final Charset charset = Charset.forName("UTF-8");
 	
-	public Client(ClientManager clientManager, SelectionKey selectionKey)
+	public Client(IGameWorld gameWorld, SelectionKey selectionKey)
 	{
-		this.clientManager = clientManager;
+		this.gameWorld = gameWorld;
 		this.selectionKey = selectionKey;
 		
 		recvBuffer = ByteBuffer.allocate(0x20000);
@@ -33,15 +35,16 @@ public class Client
 	
 	public void login()
 	{
-		clientManager.addClient(this);
+		gameWorld.getClientManager().addClient(this);
 	}
 	
 	public void logout()
 	{
 		selectionKey.cancel();
-		clientManager.removeClient(this);
+		gameWorld.getClientManager().removeClient(this);
 	}
 	
+	@Override
 	public void onReadyRecv()
 	{
 		SocketChannel socketChannel = (SocketChannel) selectionKey.channel();
@@ -101,6 +104,7 @@ public class Client
 		}
 	}
 	
+	@Override
 	public void onReadySend()
 	{
 		SocketChannel socketChannel = (SocketChannel) selectionKey.channel();
@@ -123,7 +127,7 @@ public class Client
 	
 	private final Amf3 amf3 = new Amf3();
 	
-	private final ClientManager clientManager;
+	private final IGameWorld gameWorld;
 	private final SelectionKey selectionKey;
 	
 	private boolean isSending;

@@ -11,12 +11,16 @@ import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import snjdck.core.IGameWorld;
+import snjdck.core.IoSession;
+
 public class GameServer
 {
 	private static final Logger logger = Logger.getLogger(GameServer.class.getName());
 	
-	public GameServer(int port)
+	public GameServer(IGameWorld gameWorld, int port)
 	{
+		this.gameWorld = gameWorld;
 		this.port = port;
 	}
 	
@@ -30,7 +34,7 @@ public class GameServer
 		while(true){
 			int nKeysUpdated = selector.select();
 			
-			logger.log(Level.INFO, "nKeysUpdated:" + nKeysUpdated);
+			logger.info("nKeysUpdated:" + nKeysUpdated);
 			
 			updateSelectionKeys();
 		}
@@ -72,16 +76,16 @@ public class GameServer
 			return;
 		}
 		
-		Client client = (Client) selectionKey.attachment();
+		IoSession session = (IoSession) selectionKey.attachment();
 		
 		if(selectionKey.isReadable()){
-			client.onReadyRecv();
+			session.onReadyRecv();
 		}
 		if(selectionKey.isValid() == false){
 			return;
 		}
 		if(selectionKey.isWritable()){
-			client.onReadySend();
+			session.onReadySend();
 		}
 	}
 	
@@ -89,7 +93,7 @@ public class GameServer
 	{
 		SocketChannel socketChannel = serverSocketChannel.accept();
 		SelectionKey selectionKey = registerToSelector(socketChannel, SelectionKey.OP_READ);
-		selectionKey.attach(new Client(clientManager, selectionKey));
+		selectionKey.attach(new Client(gameWorld, selectionKey));
 	}
 	
 	private SelectionKey registerToSelector(SelectableChannel channel, int ops) throws IOException
@@ -98,8 +102,8 @@ public class GameServer
 		return channel.register(selector, ops);
 	}
 	
+	private final IGameWorld gameWorld;
 	private final int port;
-	private final ClientManager clientManager = new ClientManager();
 	
 	private ServerSocketChannel serverSocketChannel;
 	private Selector selector;
