@@ -8,6 +8,23 @@ import java.util.Properties;
 
 public class IniReader
 {
+	public static void main(String[] args)
+	{
+		try {
+			IniReader reader = new IniReader("D:\\test.ini");
+			System.out.println(reader.getValue("session1", "name"));
+			System.out.println(reader.getValue("session1", "password"));
+			System.out.println(reader.getValue("session1", "sex"));
+			System.out.println(reader.getValue("session1", "age"));
+			System.out.println(reader.getValue("session1", "chinesename"));
+			System.out.println(reader.getValue("session2", "name"));
+			System.out.println(reader.getValue("session2", "password"));
+			System.out.println(reader.getValue("session2", "age"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public IniReader(String fileName) throws IOException
 	{
 		sessionMap = new HashMap<String, Properties>();
@@ -20,27 +37,37 @@ public class IniReader
 	private void parseFile(BufferedReader reader) throws IOException
 	{
 		String line = null;
+		
 		while(true){
 			line = reader.readLine();
 			if(null == line){
 				break;
 			}else{
-				parseLine(line);
+				parseLine(line.trim());
 			}
 		}
+		
+		currentProperties = null;
 	}
 
 	private void parseLine(String line)
 	{
-		line = line.trim();
-		if(line.matches("\\[.*\\]")){
-			currentSession = line.replaceFirst("\\[(.*)\\]", "$1");
-			currentProperties = new Properties();
-			sessionMap.put(currentSession, currentProperties);
-		}else if(line.matches(".*=.*")){
-			if(null == currentSession){
+		if(line.matches("\\[.*?\\]")){
+			String sessionName = line.replaceFirst("\\[(.*?)\\]", "$1");
+			if(sessionMap.containsKey(sessionName)){
+				currentProperties = sessionMap.get(sessionName);
+			}else{
+				currentProperties = new Properties();
+				sessionMap.put(sessionName, currentProperties);
+			}
+		}else if(null != currentProperties){
+			int index = line.indexOf('=');
+			if(index < 0){
 				return;
 			}
+			String key = line.substring(0, index);
+			String value = line.substring(index+1);
+			currentProperties.setProperty(key, value);
 		}
 	}
 	
@@ -55,6 +82,5 @@ public class IniReader
 
 	private final HashMap<String, Properties> sessionMap;
 	
-	private transient String currentSession;
 	private transient Properties currentProperties;
 }
