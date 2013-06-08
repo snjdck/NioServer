@@ -5,14 +5,12 @@ import java.util.logging.Logger;
 import snjdck.core.IClientManager;
 import snjdck.core.IGameWorld;
 
-public class GameWorld implements IGameWorld, Runnable
+public class GameWorld implements IGameWorld
 {
 	private static final Logger logger = Logger.getLogger(GameWorld.class.getName());
 	
-	public GameWorld(long updateInterval)
+	public GameWorld()
 	{
-		this.updateInterval = updateInterval;
-		
 		clientManager = new ClientManager();
 	}
 
@@ -22,24 +20,10 @@ public class GameWorld implements IGameWorld, Runnable
 		return clientManager;
 	}
 	
-	@Override
-	public void run()
-	{
-		try{
-			while(true){
-				onUpdate();
-				Thread.sleep(updateInterval);
-			}
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-	}
-	
-	protected void onUpdate()
+	public void onUpdate(long timeElapsed)
 	{
 		logger.info("game world update");
 	}
 	
 	private final IClientManager clientManager;
-	private final long updateInterval;
 }

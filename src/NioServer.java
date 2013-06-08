@@ -2,13 +2,13 @@ import java.io.IOException;
 
 import snjdck.GameServer;
 import snjdck.GameWorld;
+import snjdck.core.IGameWorld;
 
 public class NioServer
 {
 	public static void main(String[] args)
 	{
-		GameWorld gameWorld = new GameWorld(1000L);
-		new Thread(gameWorld).start();
+		IGameWorld gameWorld = new GameWorld();
 		
 		GameServer server = new GameServer(gameWorld, 7410);
 		

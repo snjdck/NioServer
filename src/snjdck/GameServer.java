@@ -31,12 +31,20 @@ public class GameServer
 		
 		registerToSelector(serverSocketChannel, SelectionKey.OP_ACCEPT);
 		
+		timestamp = System.currentTimeMillis();
+		
 		while(true){
 			int nKeysUpdated = selector.select();
+			
+			long nowTime = System.currentTimeMillis();
+			long timeElapsed = nowTime - timestamp;
+			timestamp = nowTime;
 			
 			logger.info("nKeysUpdated:" + nKeysUpdated);
 			
 			updateSelectionKeys();
+			
+			gameWorld.onUpdate(timeElapsed);
 		}
 	}
 	
@@ -101,6 +109,8 @@ public class GameServer
 		channel.configureBlocking(false);
 		return channel.register(selector, ops);
 	}
+	
+	private long timestamp;
 	
 	private final IGameWorld gameWorld;
 	private final int port;
