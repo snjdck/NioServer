@@ -31,18 +31,23 @@ public class GameServer
 		
 		registerToSelector(serverSocketChannel, SelectionKey.OP_ACCEPT);
 		
-		timestamp = System.currentTimeMillis();
+		loopForever();
+	}
+	
+	private void loopForever() throws IOException
+	{
+		long prevTimestamp = System.currentTimeMillis();
+		long nextTimestamp;
+		long timeElapsed;
 		
-		while(true){
-			int nKeysUpdated = selector.select();
+		while(true)
+		{
+			selector.select(updateInterval);
+			updateIO();
 			
-			long nowTime = System.currentTimeMillis();
-			long timeElapsed = nowTime - timestamp;
-			timestamp = nowTime;
-			
-			logger.info("nKeysUpdated:" + nKeysUpdated);
-			
-			updateSelectionKeys();
+			nextTimestamp = System.currentTimeMillis();
+			timeElapsed = nextTimestamp - prevTimestamp;
+			prevTimestamp = nextTimestamp;
 			
 			gameWorld.onUpdate(timeElapsed);
 		}
@@ -68,7 +73,7 @@ public class GameServer
 		return channel;
 	}
 	
-	private void updateSelectionKeys() throws IOException
+	private void updateIO() throws IOException
 	{
 		Iterator<SelectionKey> it = selector.selectedKeys().iterator();
 		while(it.hasNext()){
@@ -110,7 +115,7 @@ public class GameServer
 		return channel.register(selector, ops);
 	}
 	
-	private long timestamp;
+	private final long updateInterval = 1000;
 	
 	private final IGameWorld gameWorld;
 	private final int port;

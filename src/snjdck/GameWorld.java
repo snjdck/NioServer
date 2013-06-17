@@ -22,7 +22,7 @@ public class GameWorld implements IGameWorld
 	
 	public void onUpdate(long timeElapsed)
 	{
-		logger.info("game world update");
+		logger.info("game world update, " + timeElapsed);
 	}
 	
 	private final IClientManager clientManager;
