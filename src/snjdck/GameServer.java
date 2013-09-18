@@ -42,7 +42,7 @@ public class GameServer
 		
 		while(true)
 		{
-			selector.select(updateInterval);
+			selector.selectNow();
 			updateIO();
 			
 			nextTimestamp = System.currentTimeMillis();
@@ -77,8 +77,9 @@ public class GameServer
 	{
 		Iterator<SelectionKey> it = selector.selectedKeys().iterator();
 		while(it.hasNext()){
-			handleSelectionKey(it.next());
+			SelectionKey selectionKey = it.next();
 			it.remove();
+			handleSelectionKey(selectionKey);
 		}
 	}
 	
@@ -114,8 +115,6 @@ public class GameServer
 		channel.configureBlocking(false);
 		return channel.register(selector, ops);
 	}
-	
-	private final long updateInterval = 1000;
 	
 	private final IGameWorld gameWorld;
 	private final int port;

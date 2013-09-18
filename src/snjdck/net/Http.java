@@ -12,15 +12,14 @@ public class Http
 {
 	public interface IHttpCallback
 	{
-		void onResult(bool ok, Object data);
+		void onResult(Boolean ok, Object data);
 	}
 
 	public static void main(String[] args)
 	{
 		try {
-			System.out.println(Http.Get("http://www.baidu.com", null));
+			Http.Get("http://www.baidu.com", null, null);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		System.out.println("==end==");
@@ -51,20 +50,20 @@ public class Http
 		return buffer.toString();
 	}
 	
-	static public void Get(String path, Map<String, String> params, IHttpCallback callback) throws IOException
+	static public void Get(final String path, final Map<String, String> params, final IHttpCallback callback) throws IOException
 	{
-		new Thread(){
+		new Thread(new Runnable(){
 			@Override
 			public void run(){
-				String result = GetImp(path, params);
-				new Runalbe(){
-					@Override
-					public void run(){
-						callback.onResult(true, result);
-					}
-				};
+				String result = null;
+				try {
+					result = GetImp(path, params);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				callback.onResult(true, result);
 			}
-		}.start();
+		}).start();
 	}
 	
 	static private String GetImp(String path, Map<String, String> params) throws IOException
