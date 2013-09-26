@@ -30,11 +30,9 @@ public class GameServer
 		selector = Selector.open();
 		
 		registerToSelector(serverSocketChannel, SelectionKey.OP_ACCEPT);
-		
-		loopForever();
 	}
 	
-	private void loopForever() throws IOException
+	public void runMainLoop() throws IOException
 	{
 		long prevTimestamp = System.currentTimeMillis();
 		long nextTimestamp;
@@ -50,6 +48,7 @@ public class GameServer
 			prevTimestamp = nextTimestamp;
 			
 			gameWorld.onUpdate(timeElapsed);
+			gameWorld.handleAllActions();
 		}
 	}
 	

@@ -14,6 +14,7 @@ public class NioServer
 		
 		try{
 			server.startup();
+			server.runMainLoop();
 		}catch(IOException e){
 			e.printStackTrace();
 			server.shutdown();

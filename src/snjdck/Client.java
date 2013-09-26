@@ -28,6 +28,8 @@ public class Client implements IoSession
 		recvBuffer = ByteBuffer.allocate(0x20000);
 		sendBuffer = ByteBuffer.allocate(0x10000);
 		
+		sendPacketList = new LinkedList<IPacket>();
+		
 		nextPacket = new Packet();
 	}
 	
@@ -56,13 +58,13 @@ public class Client implements IoSession
 		try{
 			nBytesRead = socketChannel.read(recvBuffer);
 		}catch(IOException e){
-			logger.log(Level.INFO, "client quit!");
+			logger.info("client quit!");
 			logout();
 			return;
 		}
 		
 		if(nBytesRead < 0){
-			logger.log(Level.INFO, "recv bytes < 0");
+			logger.info("recv bytes < 0");
 			logout();
 		}else if(nBytesRead > 0){
 			recvBuffer.flip();
@@ -74,37 +76,20 @@ public class Client implements IoSession
 	
 	private void readPacket()
 	{
-		if(recvBuffer.remaining() < nextPacket.getHeadSize()){
-			resetRecvBuffer();
-			return;
-		}
-		
-		recvBuffer.mark();
-		nextPacket.readHead(recvBuffer);
-		
-		if(recvBuffer.remaining() < nextPacket.getBodySize()){
-			recvBuffer.reset();
-			resetRecvBuffer();
-			return;
-		}
-		
-		nextPacket.readBody(recvBuffer);
-		HashMap<String, Object> obj = (HashMap<String, Object>) nextPacket.getBody();
-		logger.info("recv msg:" + obj.get("msg"));
-		
-		nextPacket = new Packet();
-		readPacket();
-	}
-	
-	private void resetRecvBuffer()
-	{
-		if(recvBuffer.position() > 0){
-			if(recvBuffer.remaining() > 0){
-				recvBuffer.compact();
-			}else{
-				recvBuffer.clear();
+		boolean isReadSuccess;
+		do{
+			isReadSuccess = nextPacket.read(recvBuffer);
+			if(isReadSuccess){
+				gameWorld.addAction(this, nextPacket);
+				nextPacket = new Packet();
+			}else if(recvBuffer.position() > 0){
+				if(recvBuffer.hasRemaining()){
+					recvBuffer.compact();
+				}else{
+					recvBuffer.clear();
+				}
 			}
-		}
+		}while(isReadSuccess);
 	}
 	
 	@Override
@@ -119,13 +104,18 @@ public class Client implements IoSession
 		}
 	}
 	
-	public void send(String msg)
+	public void send(Object msg)
 	{
-		sendQueue.add(msg);
+//		sendQueue.add(msg);
 		if(false == isSending){
 			selectionKey.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
 			isSending = true;
 		}
+	}
+	
+	public void reply(IPacket packet, Object msg)
+	{
+		
 	}
 	
 	private IPacket nextPacket;
@@ -138,4 +128,6 @@ public class Client implements IoSession
 	
 	private final ByteBuffer recvBuffer;
 	private final ByteBuffer sendBuffer;
+	
+	private final LinkedList<IPacket> sendPacketList;
 }

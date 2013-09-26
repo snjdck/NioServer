@@ -1,9 +1,12 @@
 package snjdck;
 
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.logging.Logger;
 
 import snjdck.core.IClientManager;
 import snjdck.core.IGameWorld;
+import snjdck.core.IPacket;
 
 public class GameWorld implements IGameWorld
 {
@@ -11,6 +14,7 @@ public class GameWorld implements IGameWorld
 	
 	public GameWorld()
 	{
+		actionList = new LinkedList<Action>();
 		clientManager = new ClientManager();
 	}
 
@@ -22,8 +26,26 @@ public class GameWorld implements IGameWorld
 	
 	public void onUpdate(long timeElapsed)
 	{
-		logger.info("game world update, " + timeElapsed);
+//		logger.info("game world update, " + timeElapsed);
 	}
 	
+	@Override
+	public void addAction(Client client, IPacket packet)
+	{
+		actionList.add(new Action(client, packet));
+	}
+	
+	@Override
+	public void handleAllActions()
+	{
+		while(actionList.size() > 0)
+		{
+			Action action = actionList.removeFirst();
+			HashMap<String, Object> obj = action.packet.getBody();
+			logger.info("recv msg:" + obj.get("msg"));
+		}
+	}
+
+	private final LinkedList<Action> actionList;
 	private final IClientManager clientManager;
 }

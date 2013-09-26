@@ -1,16 +1,11 @@
 package snjdck.core;
 
 import java.nio.ByteBuffer;
+import java.util.HashMap;
 
 public interface IPacket
 {
-	int getHeadSize();
-	int getBodySize();
-	int getTailSize();
-	
-	void readHead(ByteBuffer buffer);
-	void readBody(ByteBuffer buffer);
-	void readTail(ByteBuffer buffer);
-	
-	Object getBody();
+	boolean read(ByteBuffer buffer);
+	HashMap<String, Object> getBody();
+	int size();
 }
