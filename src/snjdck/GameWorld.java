@@ -7,15 +7,17 @@ import java.util.logging.Logger;
 import snjdck.core.IClientManager;
 import snjdck.core.IGameWorld;
 import snjdck.core.IPacket;
+import snjdck.core.IPacketDispatcher;
 
 public class GameWorld implements IGameWorld
 {
 	private static final Logger logger = Logger.getLogger(GameWorld.class.getName());
 	
-	public GameWorld()
+	public GameWorld(IPacketDispatcher packetDispatcher)
 	{
-		actionList = new LinkedList<Action>();
-		clientManager = new ClientManager();
+		this.packetDispatcher = packetDispatcher;
+		this.actionList = new LinkedList<Action>();
+		this.clientManager = new ClientManager();
 	}
 
 	@Override
@@ -41,11 +43,11 @@ public class GameWorld implements IGameWorld
 		while(actionList.size() > 0)
 		{
 			Action action = actionList.removeFirst();
-			HashMap<String, Object> obj = action.packet.getBody();
-			logger.info("recv msg:" + obj.get("msg"));
+			packetDispatcher.dispatch(action.client, action.packet);
 		}
 	}
 
 	private final LinkedList<Action> actionList;
 	private final IClientManager clientManager;
+	private final IPacketDispatcher packetDispatcher;
 }

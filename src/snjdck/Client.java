@@ -28,9 +28,9 @@ public class Client implements IoSession
 		recvBuffer = ByteBuffer.allocate(0x20000);
 		sendBuffer = ByteBuffer.allocate(0x10000);
 		
-		sendPacketList = new LinkedList<IPacket>();
+		packetListToSend = new LinkedList<IPacket>();
 		
-		nextPacket = new Packet();
+		nextRecvPacket = new Packet();
 	}
 	
 	public int getID()
@@ -52,6 +52,7 @@ public class Client implements IoSession
 	@Override
 	public void onReadyRecv()
 	{
+		logger.info("nio ready recv");
 		SocketChannel socketChannel = (SocketChannel) selectionKey.channel();
 		final int nBytesRead;
 		
@@ -76,12 +77,12 @@ public class Client implements IoSession
 	
 	private void readPacket()
 	{
-		boolean isReadSuccess;
+		boolean isReadSuccess = false;
 		do{
-			isReadSuccess = nextPacket.read(recvBuffer);
+			isReadSuccess = nextRecvPacket.read(recvBuffer);
 			if(isReadSuccess){
-				gameWorld.addAction(this, nextPacket);
-				nextPacket = new Packet();
+				gameWorld.addAction(this, nextRecvPacket);
+				nextRecvPacket = new Packet();
 			}else if(recvBuffer.position() > 0){
 				if(recvBuffer.hasRemaining()){
 					recvBuffer.compact();
@@ -92,42 +93,88 @@ public class Client implements IoSession
 		}while(isReadSuccess);
 	}
 	
+	private void writePacket()
+	{
+		boolean isWriteSuccess = false;
+		do{
+			isWriteSuccess = nextSendPacket.write(sendBuffer);
+			if(isWriteSuccess){
+				if(packetListToSend.isEmpty()){
+					nextSendPacket = null;
+					break;
+				}else{
+					nextSendPacket = packetListToSend.removeFirst();
+				}
+			}
+		}while(isWriteSuccess);
+	}
+	
 	@Override
 	public void onReadySend()
 	{
+		logger.info("nio ready send");
+		if(null != nextSendPacket){
+			writePacket();
+		}
+		
+		sendBuffer.flip();
+		
 		SocketChannel socketChannel = (SocketChannel) selectionKey.channel();
+		final int nBytesWrite;
 		
 		try{
-			int nBytesWrite = socketChannel.write(sendBuffer);
+			nBytesWrite = socketChannel.write(sendBuffer);
 		}catch(IOException e){
 			e.printStackTrace();
+			return;
+		}
+		
+		if(nBytesWrite < 0){
+			logger.info("write bytes < 0");
+			logout();
+		}else if(nBytesWrite > 0){
+			if(sendBuffer.hasRemaining()){
+				sendBuffer.compact();
+			}else{
+				sendBuffer.clear();
+				selectionKey.interestOps(SelectionKey.OP_READ);
+				isSending = false;
+			}
+		}else{
+			logger.info("写入数据长度为0!");
 		}
 	}
 	
-	public void send(Object msg)
+	private void sendPacket(IPacket packet)
 	{
-//		sendQueue.add(msg);
+		packetListToSend.add(packet);
 		if(false == isSending){
+			nextSendPacket = packetListToSend.removeFirst();
 			selectionKey.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
 			isSending = true;
 		}
 	}
 	
-	public void reply(IPacket packet, Object msg)
+	public void send(int msgId, HashMap<String, Object> msg)
 	{
-		
+		sendPacket(Packet.Create(msgId, msg));
 	}
 	
-	private IPacket nextPacket;
+	public void reply(IPacket packet, HashMap<String, Object> msg)
+	{
+		sendPacket(packet.createReply(msg));
+	}
+	
+	private IPacket nextRecvPacket;
+	private IPacket nextSendPacket;
 	
 	private final IGameWorld gameWorld;
 	private final SelectionKey selectionKey;
 	
-	private final List<String> sendQueue = new LinkedList<String>();
 	private boolean isSending;
 	
 	private final ByteBuffer recvBuffer;
 	private final ByteBuffer sendBuffer;
 	
-	private final LinkedList<IPacket> sendPacketList;
+	private final LinkedList<IPacket> packetListToSend;
 }

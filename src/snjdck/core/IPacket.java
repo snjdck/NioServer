@@ -6,6 +6,11 @@ import java.util.HashMap;
 public interface IPacket
 {
 	boolean read(ByteBuffer buffer);
+	boolean write(ByteBuffer buffer);
+	
+	IPacket createReply(HashMap<String, Object> msg);
+	
+	int getMsgId();
+	int getMsgIndex();
 	HashMap<String, Object> getBody();
-	int size();
 }

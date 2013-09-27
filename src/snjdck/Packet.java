@@ -15,8 +15,8 @@ final public class Packet implements IPacket
 		Packet packet = new Packet();
 		
 		packet.msgId = msgId;
-		packet.bodyBytes = amf3.encode(msg);
 		packet.body = msg;
+		packet.bodyBytes = amf3.encode(msg);
 		packet.bodySize = packet.bodyBytes.length;
 		
 		return packet;
@@ -24,27 +24,56 @@ final public class Packet implements IPacket
 	
 	public Packet()
 	{
-		headSize = 8;
 	}
 	
 	@Override
+	public boolean write(ByteBuffer buffer)
+	{
+		if(buffer.remaining() < headSize + bodySize){
+			return false;
+		}
+		
+		writeHead(buffer);
+		writeBody(buffer);
+//		if(false == isHeadReady){
+//			if(buffer.remaining() < headSize){
+//				return false;
+//			}else{
+//				writeHead(buffer);
+//				isHeadReady = true;
+//			}
+//		}
+//		
+//		if(false == isBodyReady){
+//			if(buffer.remaining() < bodySize){
+//				return false;
+//			}else{
+//				writeBody(buffer);
+//				isBodyReady = true;
+//			}
+//		}
+		
+		return true;
+	}
+
+	@Override
 	public boolean read(ByteBuffer buffer)
 	{
-		if(false == isHeadReaded){
+		if(false == isHeadReady){
 			if(buffer.remaining() < headSize){
 				return false;
 			}else{
 				readHead(buffer);
-				isHeadReaded = true;
+				isHeadReady = true;
 			}
 		}
 		
-		if(false == isBodyReaded){
+		if(false == isBodyReady){
 			if(buffer.remaining() < bodySize){
 				return false;
 			}else{
 				readBody(buffer);
-				isBodyReaded = true;
+				isBodyReady = true;
 			}
 		}
 		
@@ -55,6 +84,14 @@ final public class Packet implements IPacket
 	{
 		bodySize = buffer.getInt();
 		msgId = buffer.getInt();
+		msgIndex = buffer.getInt();
+	}
+	
+	private void writeHead(ByteBuffer buffer)
+	{
+		buffer.putInt(bodySize);
+		buffer.putInt(msgId);
+		buffer.putInt(msgIndex);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -64,26 +101,48 @@ final public class Packet implements IPacket
 		buffer.get(bodyBytes);
 		body = (HashMap<String, Object>) amf3.decode(bodyBytes);
 	}
+	
+	private void writeBody(ByteBuffer buffer)
+	{
+		buffer.put(bodyBytes);
+	}
 
 	@Override
 	public HashMap<String, Object> getBody()
 	{
 		return body;
 	}
-	
+
 	@Override
-	public int size()
+	public int getMsgId()
 	{
-		return headSize + bodySize;
+		return msgId;
 	}
 
-	private boolean isHeadReaded;
-	private boolean isBodyReaded;
+	@Override
+	public int getMsgIndex()
+	{
+		return msgIndex;
+	}
+
+	@Override
+	public IPacket createReply(HashMap<String, Object> msg)
+	{
+		Packet packet = Create(msgId, msg);
+		
+		packet.msgIndex = msgIndex;
+		
+		return packet;
+	}
+
+	private boolean isHeadReady;
+	private boolean isBodyReady;
 	
-	private int headSize;
+	final private int headSize = 12;
 	private int bodySize;
 	
 	private int msgId;
+	private int msgIndex;
 	private HashMap<String, Object> body;
 	private byte[] bodyBytes;
 }
