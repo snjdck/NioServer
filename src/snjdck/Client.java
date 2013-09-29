@@ -9,17 +9,14 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 
+import snjdck.core.ClientState;
+import snjdck.core.IClient;
 import snjdck.core.IGameWorld;
 import snjdck.core.IPacket;
 import snjdck.core.IoSession;
 
-public class Client implements IoSession
+public class Client implements IClient, IoSession
 {
-	public enum State{
-		CONNECTED,
-		AUTHORIZED
-	}
-	
 	private static final Logger logger = Logger.getLogger(Client.class.getName());
 	static private final Charset charset = Charset.forName("UTF-8");
 	
@@ -39,6 +36,12 @@ public class Client implements IoSession
 	public int getID()
 	{
 		return 0;
+	}
+	
+	@Override
+	public ClientState getState()
+	{
+		return state;
 	}
 	
 	public void login()
@@ -168,7 +171,7 @@ public class Client implements IoSession
 		sendPacket(packet.createReply(msg));
 	}
 	
-	private State state = State.CONNECTED;
+	private ClientState state = ClientState.CONNECTED;
 	
 	private IPacket nextRecvPacket;
 	private IPacket nextSendPacket;
