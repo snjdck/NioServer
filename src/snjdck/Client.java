@@ -7,8 +7,6 @@ import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import snjdck.core.IGameWorld;
@@ -17,6 +15,11 @@ import snjdck.core.IoSession;
 
 public class Client implements IoSession
 {
+	public enum State{
+		CONNECTED,
+		AUTHORIZED
+	}
+	
 	private static final Logger logger = Logger.getLogger(Client.class.getName());
 	static private final Charset charset = Charset.forName("UTF-8");
 	
@@ -164,6 +167,8 @@ public class Client implements IoSession
 	{
 		sendPacket(packet.createReply(msg));
 	}
+	
+	private State state = State.CONNECTED;
 	
 	private IPacket nextRecvPacket;
 	private IPacket nextSendPacket;

@@ -1,6 +1,5 @@
 package snjdck;
 
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 
@@ -34,7 +33,7 @@ public class GameWorld implements IGameWorld
 	@Override
 	public void addAction(Client client, IPacket packet)
 	{
-		actionList.add(new Action(client, packet));
+		actionList.add(Action.Create(client, packet));
 	}
 	
 	@Override
@@ -44,6 +43,7 @@ public class GameWorld implements IGameWorld
 		{
 			Action action = actionList.removeFirst();
 			packetDispatcher.dispatch(action.client, action.packet);
+			action.destroy();
 		}
 	}
 
