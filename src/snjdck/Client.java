@@ -39,11 +39,17 @@ public class Client implements IClient, IoSession
 	}
 	
 	@Override
-	public ClientState getState()
+	public ClientState state()
 	{
 		return state;
 	}
 	
+	@Override
+	public void state(ClientState newState)
+	{
+		state = newState;
+	}
+
 	public void login()
 	{
 		gameWorld.getClientManager().addClient(this);
@@ -176,7 +182,7 @@ public class Client implements IClient, IoSession
 	private IPacket nextRecvPacket;
 	private IPacket nextSendPacket;
 	
-	private final IGameWorld gameWorld;
+	public final IGameWorld gameWorld;
 	private final SelectionKey selectionKey;
 	
 	private boolean isSending;

@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.logging.Logger;
 
 import snjdck.Client;
+import snjdck.GameWorld;
 import snjdck.core.IPacket;
 import snjdck.core.IPacketHandler;
 
@@ -15,6 +16,7 @@ public class DefaultPacketHandler implements IPacketHandler
 	public void handle(Client client, IPacket packet)
 	{
 		HashMap<String, Object> obj = packet.getBody();
+		
 		logger.info("recv msg:" + obj.get("msg"));
 		obj.put("msg", "i am java nio reply");
 		client.reply(packet, obj);

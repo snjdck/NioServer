@@ -8,16 +8,12 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import snjdck.core.IGameWorld;
 import snjdck.core.IoSession;
 
 public class GameServer
 {
-	private static final Logger logger = Logger.getLogger(GameServer.class.getName());
-	
 	public GameServer(IGameWorld gameWorld, int port)
 	{
 		this.gameWorld = gameWorld;
@@ -26,10 +22,14 @@ public class GameServer
 	
 	public void startup() throws IOException
 	{
-		serverSocketChannel = createServerSocketChannel();
 		selector = Selector.open();
-		
-		registerToSelector(serverSocketChannel, SelectionKey.OP_ACCEPT);
+		serverSocketChannel = createServerSocketChannel();
+	}
+	
+	public void shutdown() throws IOException
+	{
+		serverSocketChannel.close();
+		selector.close();
 	}
 	
 	public void runMainLoop() throws IOException
@@ -52,20 +52,11 @@ public class GameServer
 		}
 	}
 	
-	public void shutdown()
-	{
-		try{
-			selector.close();
-			serverSocketChannel.close();
-		}catch(IOException e){
-			e.printStackTrace();
-		}
-	}
-	
 	private ServerSocketChannel createServerSocketChannel() throws IOException
 	{
 		ServerSocketChannel channel = ServerSocketChannel.open();
 		
+		registerToSelector(channel, SelectionKey.OP_ACCEPT);
 		channel.socket().setReuseAddress(true);
 		channel.socket().bind(new InetSocketAddress(port));
 		

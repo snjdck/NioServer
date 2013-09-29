@@ -10,14 +10,20 @@ public class PacketFilter implements IPacketFilter
 	@Override
 	public boolean filter(IClient client, IPacket packet)
 	{
-		if(client.getState() == ClientState.AUTHORIZED){
-			return true;
+		if(client.state() == ClientState.AUTHORIZED){
+			return isLoginPacket(packet) == false;
 		}
 		
-		if(client.getState() != ClientState.CONNECTED){
-			assert false;
-			return false;
+		if(client.state() == ClientState.CONNECTED){
+			return isLoginPacket(packet);
 		}
+		
+		assert false : "ClientState invalid!";
+		return false;
+	}
+	
+	private boolean isLoginPacket(IPacket packet)
+	{
 		switch(packet.getMsgId())
 		{
 			case 0x0001://登录消息

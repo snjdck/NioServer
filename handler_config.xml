@@ -1,3 +1,4 @@
 <handlers>
 	<handler id="0" class="packethandlers.DefaultPacketHandler" />
+	<handler id="1" class="packethandlers.DbPacketHandler" />
 </handlers>

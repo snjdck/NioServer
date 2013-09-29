@@ -11,16 +11,15 @@ public class NioServer
 	public static void main(String[] args)
 	{
 		IPacketDispatcher packetDispatcher = PacketDispatcherFactory.newPacketDispatcher();
-		IGameWorld gameWorld = new GameWorld(packetDispatcher);
 		
-		GameServer server = new GameServer(gameWorld, 7410);
+		IGameWorld gameWorld = new GameWorld(packetDispatcher);
+		GameServer gameServer = new GameServer(gameWorld, 7410);
 		
 		try{
-			server.startup();
-			server.runMainLoop();
+			gameServer.startup();
+			gameServer.runMainLoop();
 		}catch(IOException e){
 			e.printStackTrace();
-			server.shutdown();
 		}
 	}
 }
