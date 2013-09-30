@@ -8,9 +8,8 @@ public class AopHandler implements InvocationHandler
 {
 	private Object delegate;
 	
-	public AopHandler(Object delegate)
+	public AopHandler()
 	{
-		this.delegate = delegate;
 	}
 	
 	public Object bind(Object delegate)

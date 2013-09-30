@@ -35,23 +35,6 @@ final public class Packet implements IPacket
 		
 		writeHead(buffer);
 		writeBody(buffer);
-//		if(false == isHeadReady){
-//			if(buffer.remaining() < headSize){
-//				return false;
-//			}else{
-//				writeHead(buffer);
-//				isHeadReady = true;
-//			}
-//		}
-//		
-//		if(false == isBodyReady){
-//			if(buffer.remaining() < bodySize){
-//				return false;
-//			}else{
-//				writeBody(buffer);
-//				isBodyReady = true;
-//			}
-//		}
 		
 		return true;
 	}
@@ -59,23 +42,19 @@ final public class Packet implements IPacket
 	@Override
 	public boolean read(ByteBuffer buffer)
 	{
-		if(false == isHeadReady){
-			if(buffer.remaining() < headSize){
-				return false;
-			}else{
-				readHead(buffer);
-				isHeadReady = true;
-			}
+		if(buffer.remaining() < headSize){
+			return false;
 		}
 		
-		if(false == isBodyReady){
-			if(buffer.remaining() < bodySize){
-				return false;
-			}else{
-				readBody(buffer);
-				isBodyReady = true;
-			}
+		buffer.mark();
+		readHead(buffer);
+		
+		if(buffer.remaining() < bodySize){
+			buffer.reset();
+			return false;
 		}
+		
+		readBody(buffer);
 		
 		return true;
 	}
@@ -134,9 +113,6 @@ final public class Packet implements IPacket
 		
 		return packet;
 	}
-
-	private boolean isHeadReady;
-	private boolean isBodyReady;
 	
 	final private int headSize = 12;
 	private int bodySize;
