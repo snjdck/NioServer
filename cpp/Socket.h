@@ -1,18 +1,10 @@
 #ifndef SOCKET_H
 #define SOCKET_H
 
-#include <stdlib.h>
-#include <sys/socket.h>
-#include <sys/types.h>
 #include <netinet/in.h>
-#include <arpa/inet.h>
-
 #include <string>
 
-using namespace std;
-
-const int MAX_RECV = 0X20000;
-const int MAX_SEND = 0X10000;
+typedef unsigned char byte;
 
 class Socket
 {
@@ -23,11 +15,12 @@ public:
 	bool create();
 	bool bind(int port);
 	bool listen(int count) const;
-	bool accept(Socket &socket) const;
-	bool connect(const string& host, int port);
 
-	int recv();
-	int send();
+	Socket* accept() const;
+	bool connect(const std::string& host, int port);
+
+	int recv(byte* buffer, int buffer_size);
+	int send(byte* buffer, int buffer_size);
 
 	bool setBlocking(bool flag) const;
 
@@ -36,9 +29,6 @@ public:
 private:
 	struct sockaddr_in m_address;
 	int m_fd;
-
-	char bufferRecv[MAX_RECV];
-	char bufferSend[MAX_SEND];
 };
 
 #endif

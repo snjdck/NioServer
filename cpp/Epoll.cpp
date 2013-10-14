@@ -1,6 +1,9 @@
 #include "Epoll.h"
 
-Epoll::Epoll():m_count(0)
+#include <iostream>
+using namespace std;
+
+Epoll::Epoll():m_fd(-1), m_count(0)
 {
 	m_fd = ::epoll_create(MAX_EPOLL_SIZE);
 }
@@ -11,6 +14,7 @@ bool Epoll::add(int fd, int option)
 	event.data.fd = fd;
 
 	bool success = ::epoll_ctl(m_fd, EPOLL_CTL_ADD, fd, &event) >= 0;
+
 	if(false == success){
 		return false;
 	}
@@ -19,10 +23,19 @@ bool Epoll::add(int fd, int option)
 	return true;
 }
 
-bool Epoll::remove(int event_index)
+
+bool Epoll::update(int fd, int option)
 {
-	int fd = getEventFd(event_index);
+	event.events = option;
+	event.data.fd = fd;
+
+	return ::epoll_ctl(m_fd, EPOLL_CTL_MOD, fd, &event) >= 0;
+}
+
+bool Epoll::remove(int fd)
+{
 	bool success = ::epoll_ctl(m_fd, EPOLL_CTL_DEL, fd, &event) >= 0;
+
 	if(false == success){
 		return false;
 	}

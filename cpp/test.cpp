@@ -14,17 +14,18 @@
 #include <memory.h>
 #include <fcntl.h>
 
-#include "Socket.h"
-#include "Epoll.h"
 #include "EpollServer.h"
 
 using namespace std;
 
 int main()
 {
-	EpollServer server(7410);
+	int port = 2501;
+	cout << "server startup at port:" << port << endl;
+
+	EpollServer server(port);
 	server.run();
 
-	cout << "hello linux world!~";
+	cout << "server shutdown" << endl;
 	return 0;
 }

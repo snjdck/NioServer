@@ -5,6 +5,12 @@
 #include <iostream>
 #include <fcntl.h>
 
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <arpa/inet.h>
+
+using namespace std;
+
 Socket::Socket(int fd):m_fd(fd)
 {
 }
@@ -38,11 +44,12 @@ bool Socket::listen(int count) const
 	return -1 != listen_result;
 }
 
-bool Socket::accept(Socket &socket) const
+Socket* Socket::accept() const
 {
-	int addrLen = sizeof(socket.m_address);
-	socket.m_fd = ::accept(m_fd, (struct sockaddr*)&(socket.m_address), (socklen_t *)&addrLen);
-	return socket.isValid();
+	Socket* socket = new Socket();
+	int addrLen = sizeof(socket->m_address);
+	socket->m_fd = ::accept(m_fd, (struct sockaddr*)&(socket->m_address), (socklen_t *)&addrLen);
+	return socket;
 }
 
 bool Socket::connect(const string& host, int port)
@@ -55,23 +62,27 @@ bool Socket::connect(const string& host, int port)
 	return -1 != result;
 }
 
-int Socket::recv()
+int Socket::recv(byte* buffer, int buffer_size)
 {
-	memset(bufferRecv, 0, MAX_RECV);
-	int bytesRead = ::recv(m_fd, bufferRecv, MAX_RECV, 0);
-	cout << bytesRead << endl << string(bufferRecv);
+	memset(buffer, 0, buffer_size);
+	int bytesRead = ::recv(m_fd, buffer, buffer_size, 0);
 	return bytesRead;
 }
 
-int Socket::send()
+int Socket::send(byte* buffer, int buffer_size)
 {
-	int bytesWrite = ::send(m_fd, bufferSend, MAX_SEND, 0);
+	int bytesWrite = ::send(m_fd, buffer, buffer_size, 0);
 	return bytesWrite;
 }
 
 bool Socket::setBlocking(bool flag) const
 {
 	int opts = fcntl(m_fd, F_GETFL);
+
+	if(-1 == opts){
+		cout << "socket set option error" << endl;
+		return false;
+	}
 	if(flag){
 		opts &= ~O_NONBLOCK;
 	}else{

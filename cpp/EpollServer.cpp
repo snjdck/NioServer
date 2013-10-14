@@ -3,6 +3,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <iostream>
+#include <string>
 
 EpollServer::EpollServer(int port)
 {
@@ -25,6 +26,7 @@ EpollServer::EpollServer(int port)
 	}
 
 	server.setBlocking(false);
+	epoll.add(server.getFd(), EPOLLIN);
 }
 
 EpollServer::~EpollServer()
@@ -37,62 +39,70 @@ EpollServer::~EpollServer()
 
 void EpollServer::run()
 {
-	bool success = epoll.add(server.getFd(), EPOLLIN);
-	if(false == success){
-		return;
-	}
-
 	while(true)
 	{
 		const int event_count = epoll.wait();
 
-		cout << "loop " << event_count << endl;
 		for(int i=0; i<event_count; i++)
 		{
-			const int option = epoll.getEventOption(i);
-			if((option & EPOLLERR) || (option & EPOLLHUP))
-			{
-				perror("epoll error");
-				continue;
-			}
-			const int fd = epoll.getEventFd(i);
-			cout << "print fd:" << fd;
-			cout << "print server fd:" << server.getFd();
-
-			if(option & EPOLLIN)
-			{
-				if(fd == server.getFd()){
-					onAccept();
-				}else{
-					onRecv(socketDict[fd]);
-				}
-			}
-
-			if(option & EPOLLOUT)
-			{
-				onSend(socketDict[fd]);
-			}
+			handleEvent(epoll.getEventFd(i), epoll.getEventOption(i));
 		}
+	}
+}
+
+void EpollServer::handleEvent(int fd, int option)
+{
+	if((option & EPOLLERR) || (option & EPOLLHUP) || (option & EPOLLRDHUP))
+	{
+		Socket* socket = socketDict[fd];
+		epoll.remove(fd);
+		socketDict[fd] = NULL;
+		delete socket;
+		cout << "epoll option be err or hup" << endl;
+		return;
+	}
+	
+	cout << "fd:" << fd << endl;
+	cout << "server fd:" << server.getFd() << endl;
+
+	if(option & EPOLLIN)
+	{
+		if(fd == server.getFd()){
+			onAccept();
+		}else{
+			onRecv(socketDict[fd]);
+		}
+	}
+
+	if(option & EPOLLOUT)
+	{
+		onSend(socketDict[fd]);
 	}
 }
 
 void EpollServer::onAccept()
 {
-	Socket* socket = new Socket();
-	server.accept(*socket);
+	Socket* socket = server.accept();
 
 	socket->setBlocking(false);
-	bool success = epoll.add(socket->getFd(), EPOLLIN);
+	bool success = epoll.add(socket->getFd(), EPOLLIN | EPOLLRDHUP);
 
 	socketDict[socket->getFd()] = socket;
 
-	cout << "onAccept:" << success << socket->getFd() << endl;
+	cout << "onAccept:" << socket->getFd() << endl;
 }
 
 void EpollServer::onRecv(Socket* socket)
 {
-	socket->recv();
-	cout << "onRecv";
+	int bytesRead = socket->recv(bufferRecv, MAX_RECV);
+	if(bytesRead < 0){
+		cout << "socket read error" << endl;
+		epoll.remove(socket->getFd());
+		socketDict[socket->getFd()] = NULL;
+		delete socket;
+		return;	
+	}
+	cout << "onRecv" << endl << string((const char*)bufferRecv);
 }
 
 void EpollServer::onSend(Socket* socket)

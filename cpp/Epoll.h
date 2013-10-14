@@ -10,7 +10,8 @@ class Epoll
 public:
 	Epoll();
 	bool add(int fd, int option);
-	bool remove(int event_index);
+	bool update(int fd, int option);
+	bool remove(int fd);
 	int wait();
 	int getEventFd(int event_index);
 	int getEventOption(int event_index);
