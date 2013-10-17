@@ -1,4 +1,4 @@
-package snjdck;
+package snjdck.server;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -9,30 +9,37 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 
-import snjdck.core.IGameWorld;
 import snjdck.core.IoSession;
 
-public class GameServer
+abstract public class Server
 {
-	public GameServer(IGameWorld gameWorld, int port)
+	static public ServerSocketChannel CreateServerSocketChannel(int port) throws IOException
 	{
-		this.gameWorld = gameWorld;
-		this.port = port;
+		ServerSocketChannel channel = ServerSocketChannel.open();
+		
+		channel.socket().setReuseAddress(true);
+		channel.socket().bind(new InetSocketAddress(port));
+		
+		return channel;
+	}
+	
+	protected Selector selector;
+	
+	public Server()
+	{
 	}
 	
 	public void startup() throws IOException
 	{
 		selector = Selector.open();
-		serverSocketChannel = createServerSocketChannel();
 	}
 	
 	public void shutdown() throws IOException
 	{
-		serverSocketChannel.close();
 		selector.close();
 	}
 	
-	public void runMainLoop() throws IOException
+	final public void runMainLoop() throws IOException
 	{
 		long prevTimestamp = System.currentTimeMillis();
 		long nextTimestamp;
@@ -40,30 +47,19 @@ public class GameServer
 		
 		while(true)
 		{
-			selector.selectNow();
-			updateIO();
+			select();
+			update();
 			
 			nextTimestamp = System.currentTimeMillis();
 			timeElapsed = nextTimestamp - prevTimestamp;
 			prevTimestamp = nextTimestamp;
 			
-			gameWorld.onUpdate(timeElapsed);
-			gameWorld.handleAllActions();
+			onUpdate(timeElapsed);
 		}
 	}
+
 	
-	private ServerSocketChannel createServerSocketChannel() throws IOException
-	{
-		ServerSocketChannel channel = ServerSocketChannel.open();
-		
-		registerToSelector(channel, SelectionKey.OP_ACCEPT);
-		channel.socket().setReuseAddress(true);
-		channel.socket().bind(new InetSocketAddress(port));
-		
-		return channel;
-	}
-	
-	private void updateIO() throws IOException
+	private void update() throws IOException
 	{
 		Iterator<SelectionKey> it = selector.selectedKeys().iterator();
 		while(it.hasNext()){
@@ -97,18 +93,16 @@ public class GameServer
 	{
 		SocketChannel socketChannel = serverSocketChannel.accept();
 		SelectionKey selectionKey = registerToSelector(socketChannel, SelectionKey.OP_READ);
-		selectionKey.attach(new Client(gameWorld, selectionKey));
+		onAccept(selectionKey);
 	}
 	
-	private SelectionKey registerToSelector(SelectableChannel channel, int ops) throws IOException
+	final protected SelectionKey registerToSelector(SelectableChannel channel, int ops) throws IOException
 	{
 		channel.configureBlocking(false);
 		return channel.register(selector, ops);
 	}
 	
-	private final IGameWorld gameWorld;
-	private final int port;
-	
-	private ServerSocketChannel serverSocketChannel;
-	private Selector selector;
+	abstract protected void select() throws IOException;
+	abstract protected void onAccept(SelectionKey selectionKey);
+	abstract protected void onUpdate(long timeElapsed);
 }

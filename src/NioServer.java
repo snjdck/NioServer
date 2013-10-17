@@ -1,10 +1,10 @@
 import java.io.IOException;
 
-import snjdck.GameServer;
 import snjdck.GameWorld;
 import snjdck.PacketDispatcherFactory;
 import snjdck.core.IGameWorld;
 import snjdck.core.IPacketDispatcher;
+import snjdck.server.LogicServer;
 
 public class NioServer
 {
@@ -13,7 +13,7 @@ public class NioServer
 		IPacketDispatcher packetDispatcher = PacketDispatcherFactory.newPacketDispatcher();
 		
 		IGameWorld gameWorld = new GameWorld(packetDispatcher);
-		GameServer gameServer = new GameServer(gameWorld, 7410);
+		LogicServer gameServer = new LogicServer(gameWorld, 7410);
 		
 		try{
 			gameServer.startup();
