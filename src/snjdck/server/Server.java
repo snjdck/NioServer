@@ -9,7 +9,9 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 
+import snjdck.core.IPacketDispatcher;
 import snjdck.core.IoSession;
+import snjdck.server.action.ActionQueue;
 
 abstract public class Server
 {
@@ -23,10 +25,14 @@ abstract public class Server
 		return channel;
 	}
 	
+	private final IPacketDispatcher packetDispatcher;
+	private final ActionQueue actionQueue;
 	protected Selector selector;
 	
-	public Server()
+	public Server(IPacketDispatcher packetDispatcher)
 	{
+		this.packetDispatcher = packetDispatcher;
+		this.actionQueue = new ActionQueue();
 	}
 	
 	public void startup() throws IOException
@@ -54,10 +60,10 @@ abstract public class Server
 			timeElapsed = nextTimestamp - prevTimestamp;
 			prevTimestamp = nextTimestamp;
 			
+			actionQueue.handleAllActions(packetDispatcher);
 			onUpdate(timeElapsed);
 		}
 	}
-
 	
 	private void update() throws IOException
 	{
@@ -72,14 +78,15 @@ abstract public class Server
 	private void handleSelectionKey(SelectionKey selectionKey) throws IOException
 	{
 		if(selectionKey.isAcceptable()){
-			onReadyAccept((ServerSocketChannel) selectionKey.channel());
+			ServerSocketChannel serverSocketChannel = (ServerSocketChannel) selectionKey.channel();
+			accept(serverSocketChannel.accept());
 			return;
 		}
 		
 		IoSession session = (IoSession) selectionKey.attachment();
 		
 		if(selectionKey.isReadable()){
-			session.onReadyRecv();
+			session.onReadyRecv(actionQueue);
 		}
 		if(selectionKey.isValid() == false){
 			return;
@@ -89,11 +96,12 @@ abstract public class Server
 		}
 	}
 	
-	private void onReadyAccept(ServerSocketChannel serverSocketChannel) throws IOException
+	final protected void accept(SocketChannel socketChannel) throws IOException
 	{
-		SocketChannel socketChannel = serverSocketChannel.accept();
 		SelectionKey selectionKey = registerToSelector(socketChannel, SelectionKey.OP_READ);
-		onAccept(selectionKey);
+		IoSession session = createSession(selectionKey);
+		session.onConnected();
+		selectionKey.attach(session);
 	}
 	
 	final protected SelectionKey registerToSelector(SelectableChannel channel, int ops) throws IOException
@@ -103,6 +111,6 @@ abstract public class Server
 	}
 	
 	abstract protected void select() throws IOException;
-	abstract protected void onAccept(SelectionKey selectionKey);
+	abstract protected IoSession createSession(SelectionKey selectionKey);
 	abstract protected void onUpdate(long timeElapsed);
 }

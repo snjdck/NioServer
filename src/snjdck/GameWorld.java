@@ -1,21 +1,16 @@
 package snjdck;
 
-import java.util.LinkedList;
 import java.util.logging.Logger;
 
 import snjdck.core.IClientManager;
 import snjdck.core.IGameWorld;
-import snjdck.core.IPacket;
-import snjdck.core.IPacketDispatcher;
 
 public class GameWorld implements IGameWorld
 {
 	private static final Logger logger = Logger.getLogger(GameWorld.class.getName());
 	
-	public GameWorld(IPacketDispatcher packetDispatcher)
+	public GameWorld()
 	{
-		this.packetDispatcher = packetDispatcher;
-		this.actionList = new LinkedList<Action>();
 		this.clientManager = new ClientManager();
 	}
 
@@ -30,24 +25,6 @@ public class GameWorld implements IGameWorld
 //		logger.info("game world update, " + timeElapsed);
 	}
 	
-	@Override
-	public void addAction(Client client, IPacket packet)
-	{
-		actionList.add(Action.Create(client, packet));
-	}
-	
-	@Override
-	public void handleAllActions()
-	{
-		while(actionList.size() > 0)
-		{
-			Action action = actionList.removeFirst();
-			packetDispatcher.dispatch(action.client, action.packet);
-			action.destroy();
-		}
-	}
 
-	private final LinkedList<Action> actionList;
 	private final IClientManager clientManager;
-	private final IPacketDispatcher packetDispatcher;
 }

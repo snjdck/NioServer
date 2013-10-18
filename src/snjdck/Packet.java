@@ -22,6 +22,15 @@ final public class Packet implements IPacket
 		return packet;
 	}
 	
+	final private int headSize = 16;
+	private int bodySize;
+	
+	private int msgId;
+	private int msgIndex;
+	private int from;
+	private HashMap<String, Object> body;
+	private byte[] bodyBytes;
+	
 	public Packet()
 	{
 	}
@@ -64,6 +73,7 @@ final public class Packet implements IPacket
 		bodySize = buffer.getInt();
 		msgId = buffer.getInt();
 		msgIndex = buffer.getInt();
+		from = buffer.getInt();
 	}
 	
 	private void writeHead(ByteBuffer buffer)
@@ -71,6 +81,7 @@ final public class Packet implements IPacket
 		buffer.putInt(bodySize);
 		buffer.putInt(msgId);
 		buffer.putInt(msgIndex);
+		buffer.putInt(from);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -113,12 +124,4 @@ final public class Packet implements IPacket
 		
 		return packet;
 	}
-	
-	final private int headSize = 12;
-	private int bodySize;
-	
-	private int msgId;
-	private int msgIndex;
-	private HashMap<String, Object> body;
-	private byte[] bodyBytes;
 }

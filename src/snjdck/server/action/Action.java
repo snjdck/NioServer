@@ -1,5 +1,6 @@
-package snjdck;
+package snjdck.server.action;
 
+import snjdck.Client;
 import snjdck.core.IPacket;
 import snjdck.util.ObjectPool;
 
