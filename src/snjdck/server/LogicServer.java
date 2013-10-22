@@ -3,13 +3,11 @@ package snjdck.server;
 import java.io.IOException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
 import java.util.logging.Logger;
 
 import snjdck.Client;
 import snjdck.GameWorld;
 import snjdck.PacketDispatcherFactory;
-import snjdck.client.GateClient;
 import snjdck.core.IGameWorld;
 import snjdck.core.IPacketDispatcher;
 import snjdck.core.IoSession;
@@ -23,21 +21,16 @@ public class LogicServer extends Server
 		IGameWorld gameWorld = new GameWorld();
 		LogicServer gameServer = new LogicServer(packetDispatcher, gameWorld, 7410);
 		
-		try{
-			gameServer.startup();
-			gameServer.runMainLoop();
-		}catch(IOException e){
-			e.printStackTrace();
-		}
+		gameServer.startup();
+		gameServer.runMainLoop();
 	}
 	
-	private static final Logger logger = Logger.getLogger(LogicServer.class.getName());
+	static private final Logger logger = Logger.getLogger(LogicServer.class.getName());
 	
 	private final IGameWorld gameWorld;
 	private final int port;
 	
 	private ServerSocketChannel serverSocketChannel;
-	private SocketChannel gateSocket;
 	
 	public LogicServer(IPacketDispatcher packetDispatcher, IGameWorld gameWorld, int port)
 	{
@@ -47,33 +40,39 @@ public class LogicServer extends Server
 	}
 	
 	@Override
-	public void startup() throws IOException
+	public void startup()
 	{
 		super.startup();
 		serverSocketChannel = CreateServerSocketChannel(port);
-		logger.info("等待GateServer连接...");
-		gateSocket = serverSocketChannel.accept();
-		accept(gateSocket);
-		logger.info("GateServer已连接,准备启动");
+		registerToSelector(serverSocketChannel, SelectionKey.OP_ACCEPT);
 	}
 
 	@Override
-	public void shutdown() throws IOException
+	public void shutdown()
 	{
 		super.shutdown();
-		serverSocketChannel.close();
+		try{
+			serverSocketChannel.close();
+		}catch(IOException e){
+			e.printStackTrace();
+		}
 	}
 
 	@Override
-	protected void select() throws IOException
+	protected void select()
 	{
-		selector.selectNow();
+		try{
+			selector.selectNow();
+		}catch(IOException e){
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	protected IoSession createSession(SelectionKey selectionKey)
 	{
-		return new GateClient(gameWorld, selectionKey);
+		Client client = new Client(0, gameWorld, selectionKey);
+		return client;
 	}
 
 	@Override

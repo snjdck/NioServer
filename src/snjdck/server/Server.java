@@ -2,12 +2,16 @@ package snjdck.server;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.SocketException;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
+import java.util.logging.Logger;
 
 import snjdck.core.IPacketDispatcher;
 import snjdck.core.IoSession;
@@ -15,12 +19,29 @@ import snjdck.server.action.ActionQueue;
 
 abstract public class Server
 {
-	static public ServerSocketChannel CreateServerSocketChannel(int port) throws IOException
+	static private final Logger logger = Logger.getLogger(Server.class.getName());
+	
+	static public ServerSocketChannel CreateServerSocketChannel(int port)
 	{
-		ServerSocketChannel channel = ServerSocketChannel.open();
+		ServerSocketChannel channel;
 		
-		channel.socket().setReuseAddress(true);
-		channel.socket().bind(new InetSocketAddress(port));
+		try{
+			channel = ServerSocketChannel.open();
+		}catch(IOException e){
+			logger.info(e.toString());
+			return null;
+		}
+		
+		ServerSocket socket = channel.socket();
+		
+		try{
+			socket.setReuseAddress(true);
+			socket.bind(new InetSocketAddress(port));
+		}catch(SocketException e){
+			e.printStackTrace();
+		}catch(IOException e){
+			e.printStackTrace();
+		}
 		
 		return channel;
 	}
@@ -35,17 +56,25 @@ abstract public class Server
 		this.actionQueue = new ActionQueue();
 	}
 	
-	public void startup() throws IOException
+	public void startup()
 	{
-		selector = Selector.open();
+		try{
+			selector = Selector.open();
+		}catch(IOException e){
+			e.printStackTrace();
+		}
 	}
 	
-	public void shutdown() throws IOException
+	public void shutdown()
 	{
-		selector.close();
+		try{
+			selector.close();
+		}catch(IOException e){
+			e.printStackTrace();
+		}
 	}
 	
-	final public void runMainLoop() throws IOException
+	final public void runMainLoop()
 	{
 		long prevTimestamp = System.currentTimeMillis();
 		long nextTimestamp;
@@ -65,7 +94,7 @@ abstract public class Server
 		}
 	}
 	
-	private void update() throws IOException
+	private void update()
 	{
 		Iterator<SelectionKey> it = selector.selectedKeys().iterator();
 		while(it.hasNext()){
@@ -75,11 +104,10 @@ abstract public class Server
 		}
 	}
 	
-	private void handleSelectionKey(SelectionKey selectionKey) throws IOException
+	private void handleSelectionKey(SelectionKey selectionKey)
 	{
 		if(selectionKey.isAcceptable()){
-			ServerSocketChannel serverSocketChannel = (ServerSocketChannel) selectionKey.channel();
-			accept(serverSocketChannel.accept());
+			onReadyAccept((ServerSocketChannel)selectionKey.channel());
 			return;
 		}
 		
@@ -96,21 +124,39 @@ abstract public class Server
 		}
 	}
 	
-	final protected void accept(SocketChannel socketChannel) throws IOException
+	private void onReadyAccept(ServerSocketChannel serverSocketChannel)
 	{
+		SocketChannel socketChannel;
+		try{
+			socketChannel = serverSocketChannel.accept();
+		}catch(IOException e){
+			e.printStackTrace();
+			return;
+		}
 		SelectionKey selectionKey = registerToSelector(socketChannel, SelectionKey.OP_READ);
 		IoSession session = createSession(selectionKey);
 		session.onConnected();
 		selectionKey.attach(session);
 	}
 	
-	final protected SelectionKey registerToSelector(SelectableChannel channel, int ops) throws IOException
+	final protected SelectionKey registerToSelector(SelectableChannel channel, int ops)
 	{
-		channel.configureBlocking(false);
-		return channel.register(selector, ops);
+		try{
+			channel.configureBlocking(false);
+		}catch(IOException e){
+			e.printStackTrace();
+			return null;
+		}
+		SelectionKey selectionKey = null;
+		try{
+			selectionKey = channel.register(selector, ops);
+		}catch(ClosedChannelException e){
+			e.printStackTrace();
+		}
+		return selectionKey;
 	}
 	
-	abstract protected void select() throws IOException;
+	abstract protected void select();
 	abstract protected IoSession createSession(SelectionKey selectionKey);
 	abstract protected void onUpdate(long timeElapsed);
 }
