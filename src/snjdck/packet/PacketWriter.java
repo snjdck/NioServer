@@ -1,4 +1,4 @@
-package snjdck.server.packet;
+package snjdck.packet;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -9,11 +9,11 @@ import java.util.LinkedList;
 import snjdck.Client;
 import snjdck.core.IPacket;
 
-public class PacketWriter
+final public class PacketWriter
 {
 	private final ByteBuffer buffer;
 	private final LinkedList<IPacket> sendQueue;
-	private Client client;
+	private final Client client;
 
 	public PacketWriter(Client client, int bufferSize)
 	{

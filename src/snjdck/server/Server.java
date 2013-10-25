@@ -1,80 +1,37 @@
 package snjdck.server;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.SocketException;
-import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
-import java.util.logging.Logger;
 
-import snjdck.core.IPacketDispatcher;
 import snjdck.core.IoSession;
 import snjdck.server.action.ActionQueue;
 
 abstract public class Server
 {
-	static private final Logger logger = Logger.getLogger(Server.class.getName());
-	
-	static public ServerSocketChannel CreateServerSocketChannel(int port)
-	{
-		ServerSocketChannel channel;
-		
-		try{
-			channel = ServerSocketChannel.open();
-		}catch(IOException e){
-			logger.info(e.toString());
-			return null;
-		}
-		
-		ServerSocket socket = channel.socket();
-		
-		try{
-			socket.setReuseAddress(true);
-			socket.bind(new InetSocketAddress(port));
-		}catch(SocketException e){
-			e.printStackTrace();
-		}catch(IOException e){
-			e.printStackTrace();
-		}
-		
-		return channel;
-	}
-	
-	private final IPacketDispatcher packetDispatcher;
 	private final ActionQueue actionQueue;
 	protected Selector selector;
 	
-	public Server(IPacketDispatcher packetDispatcher)
+	public Server()
 	{
-		this.packetDispatcher = packetDispatcher;
 		this.actionQueue = new ActionQueue();
 	}
 	
-	public void startup()
+	public void startup() throws IOException
 	{
-		try{
-			selector = Selector.open();
-		}catch(IOException e){
-			e.printStackTrace();
-		}
+		selector = Selector.open();
 	}
 	
-	public void shutdown()
+	public void shutdown() throws IOException
 	{
-		try{
-			selector.close();
-		}catch(IOException e){
-			e.printStackTrace();
-		}
+		selector.close();
 	}
 	
-	final public void runMainLoop()
+	final public void runMainLoop() throws IOException
 	{
 		long prevTimestamp = System.currentTimeMillis();
 		long nextTimestamp;
@@ -89,12 +46,12 @@ abstract public class Server
 			timeElapsed = nextTimestamp - prevTimestamp;
 			prevTimestamp = nextTimestamp;
 			
-			actionQueue.handleAllActions(packetDispatcher);
+			actionQueue.handleAllActions();
 			onUpdate(timeElapsed);
 		}
 	}
 	
-	private void update()
+	private void update() throws IOException
 	{
 		Iterator<SelectionKey> it = selector.selectedKeys().iterator();
 		while(it.hasNext()){
@@ -104,14 +61,15 @@ abstract public class Server
 		}
 	}
 	
-	private void handleSelectionKey(SelectionKey selectionKey)
+	private void handleSelectionKey(SelectionKey selectionKey) throws IOException
 	{
 		if(selectionKey.isAcceptable()){
-			onReadyAccept((ServerSocketChannel)selectionKey.channel());
+			ServerSocketChannel serverSocketChannel = (ServerSocketChannel)selectionKey.channel();
+			addSocketChannel(serverSocketChannel.accept());
 			return;
 		}
 		
-		IoSession session = (IoSession) selectionKey.attachment();
+		IoSession session = (IoSession)selectionKey.attachment();
 		
 		if(selectionKey.isReadable()){
 			session.onReadyRecv(actionQueue);
@@ -124,39 +82,21 @@ abstract public class Server
 		}
 	}
 	
-	private void onReadyAccept(ServerSocketChannel serverSocketChannel)
+	final public void addSocketChannel(SocketChannel socketChannel) throws IOException
 	{
-		SocketChannel socketChannel;
-		try{
-			socketChannel = serverSocketChannel.accept();
-		}catch(IOException e){
-			e.printStackTrace();
-			return;
-		}
 		SelectionKey selectionKey = registerToSelector(socketChannel, SelectionKey.OP_READ);
 		IoSession session = createSession(selectionKey);
 		session.onConnected();
 		selectionKey.attach(session);
 	}
 	
-	final protected SelectionKey registerToSelector(SelectableChannel channel, int ops)
+	final protected SelectionKey registerToSelector(SelectableChannel channel, int ops) throws IOException
 	{
-		try{
-			channel.configureBlocking(false);
-		}catch(IOException e){
-			e.printStackTrace();
-			return null;
-		}
-		SelectionKey selectionKey = null;
-		try{
-			selectionKey = channel.register(selector, ops);
-		}catch(ClosedChannelException e){
-			e.printStackTrace();
-		}
-		return selectionKey;
+		channel.configureBlocking(false);
+		return channel.register(selector, ops);
 	}
 	
-	abstract protected void select();
+	abstract protected void select() throws IOException;
 	abstract protected IoSession createSession(SelectionKey selectionKey);
 	abstract protected void onUpdate(long timeElapsed);
 }

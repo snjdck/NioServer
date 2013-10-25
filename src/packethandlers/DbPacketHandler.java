@@ -7,15 +7,17 @@ import snjdck.Client;
 import snjdck.core.ClientState;
 import snjdck.core.IPacket;
 import snjdck.core.IPacketHandler;
+import snjdck.util.Amf3;
 
 public class DbPacketHandler implements IPacketHandler
 {
 	static private final Logger logger = Logger.getLogger(DbPacketHandler.class.getName());
+	static private final Amf3 amf = new Amf3();
 	
 	@Override
 	public void handle(Client client, IPacket packet)
 	{
-		HashMap<String, Object> obj = packet.getBody();
+		HashMap<String, Object> obj = (HashMap<String, Object>)amf.decode(packet.getBody());
 		logger.info("db recv msg:" + obj.get("msg"));
 		
 		String name = (String) obj.get("name");
@@ -29,7 +31,7 @@ public class DbPacketHandler implements IPacketHandler
 		}else{
 			result.put("msg", "auth error!");
 		}
-		client.reply(packet, result);
+		client.reply(packet, amf.encode(result));
 	}
 
 }

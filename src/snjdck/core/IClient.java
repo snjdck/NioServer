@@ -7,4 +7,6 @@ public interface IClient
 	
 	void onLogin();
 	void onLogout();
+	
+	void handlePacket(IPacket packet);
 }

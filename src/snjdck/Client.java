@@ -9,10 +9,12 @@ import snjdck.core.ClientState;
 import snjdck.core.IClient;
 import snjdck.core.IGameWorld;
 import snjdck.core.IPacket;
+import snjdck.core.IPacketDispatcher;
 import snjdck.core.IoSession;
+import snjdck.packet.Packet;
+import snjdck.packet.PacketReader;
+import snjdck.packet.PacketWriter;
 import snjdck.server.action.ActionQueue;
-import snjdck.server.packet.PacketReader;
-import snjdck.server.packet.PacketWriter;
 
 public class Client implements IClient, IoSession
 {
@@ -20,17 +22,25 @@ public class Client implements IClient, IoSession
 	static private final Charset charset = Charset.forName("UTF-8");
 	
 	final private int id;
+	private final IPacketDispatcher packetDispatcher;
 	
-	public Client(int id, IGameWorld gameWorld, SelectionKey selectionKey)
+	public Client(int id, IGameWorld gameWorld, SelectionKey selectionKey, IPacketDispatcher packetDispatcher)
 	{
 		this.id = id;
+		this.packetDispatcher = packetDispatcher;
 		this.gameWorld = gameWorld;
 		this.selectionKey = selectionKey;
 		
-		packetReader = new PacketReader(this, 0x20000);
+		packetReader = new PacketReader(this, 0x20000, new Packet());
 		packetWriter = new PacketWriter(this, 0x10000);
 	}
 	
+	@Override
+	public void handlePacket(IPacket packet)
+	{
+		packetDispatcher.dispatch(this, packet);
+	}
+
 	@Override
 	public void onLogin()
 	{
@@ -92,12 +102,12 @@ public class Client implements IClient, IoSession
 		packetWriter.onSend();
 	}
 	
-	public void send(int msgId, HashMap<String, Object> msg)
+	public void send(int msgId, byte[] msg)
 	{
 		packetWriter.send(Packet.Create(msgId, msg));
 	}
 	
-	public void reply(IPacket packet, HashMap<String, Object> msg)
+	public void reply(IPacket packet, byte[] msg)
 	{
 		packetWriter.send(packet.createReply(msg));
 	}

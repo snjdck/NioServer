@@ -1,25 +1,24 @@
-package snjdck.server.packet;
+package snjdck.packet;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
 import snjdck.Client;
-import snjdck.Packet;
 import snjdck.core.IPacket;
 import snjdck.server.action.ActionQueue;
 
-public class PacketReader
+final public class PacketReader
 {
 	private final ByteBuffer buffer;
+	private final Client client;
 	private IPacket nextPacket;
-	private Client client;
 	
-	public PacketReader(Client client, int bufferSize)
+	public PacketReader(Client client, int bufferSize, IPacket packet)
 	{
 		this.client = client;
 		buffer = ByteBuffer.allocate(bufferSize);
-		nextPacket = new Packet();
+		nextPacket = packet;
 	}
 
 	public void onRecv(ActionQueue actionQueue)
@@ -51,7 +50,7 @@ public class PacketReader
 		buffer.flip();
 		while(nextPacket.read(buffer)){
 			actionQueue.addAction(client, nextPacket);
-			nextPacket = new Packet();
+			nextPacket = nextPacket.create();
 		}
 		if(buffer.hasRemaining()){
 			buffer.compact();

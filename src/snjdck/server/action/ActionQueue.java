@@ -4,7 +4,6 @@ import java.util.LinkedList;
 
 import snjdck.Client;
 import snjdck.core.IPacket;
-import snjdck.core.IPacketDispatcher;
 
 public class ActionQueue
 {
@@ -20,12 +19,12 @@ public class ActionQueue
 		list.add(Action.Create(client, packet));
 	}
 	
-	public void handleAllActions(IPacketDispatcher packetDispatcher)
+	public void handleAllActions()
 	{
 		while(list.size() > 0)
 		{
 			Action action = list.removeFirst();
-			packetDispatcher.dispatch(action.client, action.packet);
+			action.client.handlePacket(action.packet);
 			action.destroy();
 		}
 	}

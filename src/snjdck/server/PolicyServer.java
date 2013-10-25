@@ -4,14 +4,27 @@ import java.io.IOException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
 
+import snjdck.GameWorld;
+import snjdck.PacketDispatcherFactory;
+import snjdck.core.IGameWorld;
+import snjdck.core.IPacketDispatcher;
 import snjdck.core.IoSession;
 import snjdck.server.action.ActionQueue;
+import snjdck.util.SocketFactory;
 
 
 public class PolicyServer extends Server
 {
 	static public void main(String[] args)
 	{
+		PolicyServer policyServer = new PolicyServer();
+		
+		try{
+			policyServer.startup();
+			policyServer.runMainLoop();
+		}catch(IOException e){
+			e.printStackTrace();
+		}
 		String s = "<policy-file-request/>";
 		s = "<?xml version=\"1.0\"?><cross-domain-policy><allow-access-from domain=\"*\" to-ports=\"*\" /></cross-domain-policy>";
 	}
@@ -20,36 +33,28 @@ public class PolicyServer extends Server
 	
 	public PolicyServer()
 	{
-		super(null);
+		super();
 	}
 
 	@Override
-	public void startup()
+	public void startup() throws IOException
 	{
 		super.startup();
-		serverSocketChannel = CreateServerSocketChannel(843);
+		serverSocketChannel = SocketFactory.CreateServerSocketChannel(843);
 		registerToSelector(serverSocketChannel, SelectionKey.OP_ACCEPT);
 	}
 
 	@Override
-	public void shutdown()
+	public void shutdown() throws IOException
 	{
 		super.shutdown();
-		try{
-			serverSocketChannel.close();
-		}catch(IOException e){
-			e.printStackTrace();
-		}
+		serverSocketChannel.close();
 	}
 
 	@Override
-	protected void select()
+	protected void select() throws IOException
 	{
-		try{
-			selector.select();
-		}catch(IOException e){
-			e.printStackTrace();
-		}
+		selector.select();
 	}
 
 	@Override
@@ -69,7 +74,6 @@ public class PolicyServer extends Server
 
 class PolicyClient implements IoSession
 {
-
 	@Override
 	public void onConnected()
 	{
