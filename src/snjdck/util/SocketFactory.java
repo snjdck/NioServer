@@ -6,7 +6,7 @@ import java.net.ServerSocket;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
-public class SocketFactory
+final public class SocketFactory
 {
 	static public ServerSocketChannel CreateServerSocketChannel(int port) throws IOException
 	{

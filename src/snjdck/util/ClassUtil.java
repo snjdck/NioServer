@@ -4,7 +4,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 @SuppressWarnings("unchecked")
-public class ClassUtil
+final public class ClassUtil
 {
 	static public <T> Class<T> getSuperGenericClass(Class<?> targetClass, int index)
 	{
