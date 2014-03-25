@@ -7,7 +7,7 @@ set output_jar=server.zip
 cd /d %proj_home%
 "%java_home%\javac" -sourcepath src -d bin src/%main_class%.java
 cd bin
-"%java_home%\jar" cvfe ../%output_jar% %main_class% *.class
+"%java_home%\jar" cvfe ../%output_jar% %main_class% ./*
 cd ..
 "%java_home%\java" -jar %output_jar%
 "%java_home%\java" -cp %output_jar% %main_class%
