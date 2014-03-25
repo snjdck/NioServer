@@ -2,40 +2,42 @@ package snjdck.packet;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.LinkedList;
 
-import snjdck.Client;
 import snjdck.core.IPacket;
-import snjdck.server.action.ActionQueue;
+import snjdck.core.IoSession;
 
 final public class PacketReader
 {
 	private final ByteBuffer buffer;
-	private final Client client;
+	private final LinkedList<IPacket> recvQueue;
+	private final IoSession session;
 	private IPacket nextPacket;
 	
-	public PacketReader(Client client, int bufferSize, IPacket packet)
+	public PacketReader(IoSession session, int bufferSize, IPacket packet)
 	{
-		this.client = client;
+		this.session = session;
 		buffer = ByteBuffer.allocate(bufferSize);
+		recvQueue = new LinkedList<IPacket>();
 		nextPacket = packet;
 	}
 
-	public void onRecv(ActionQueue actionQueue) throws IOException
+	public void onRecv() throws IOException
 	{
-		final int nBytesRead = client.doRead(buffer);
+		final int nBytesRead = session.doRead(buffer);
 		if(nBytesRead < 0){
 			throw new IOException();
 		}
 		if(nBytesRead > 0){
-			readPacketsFromBuffer(actionQueue);
+			readPacketsFromBuffer();
 		}
 	}
 	
-	private void readPacketsFromBuffer(ActionQueue actionQueue)
+	private void readPacketsFromBuffer()
 	{
 		buffer.flip();
 		while(nextPacket.read(buffer)){
-			actionQueue.addAction(client, nextPacket);
+			recvQueue.add(nextPacket);
 			nextPacket = nextPacket.create();
 		}
 		if(buffer.hasRemaining()){
@@ -43,5 +45,15 @@ final public class PacketReader
 		}else{
 			buffer.clear();
 		}
+	}
+	
+	public boolean hasPacket()
+	{
+		return recvQueue.size() > 0;
+	}
+	
+	public IPacket shiftPacket()
+	{
+		return recvQueue.removeFirst();
 	}
 }

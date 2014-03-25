@@ -4,18 +4,18 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 
-import snjdck.Client;
 import snjdck.core.IPacket;
+import snjdck.core.IoSession;
 
 final public class PacketWriter
 {
 	private final ByteBuffer buffer;
 	private final LinkedList<IPacket> sendQueue;
-	private final Client client;
+	private final IoSession session;
 
-	public PacketWriter(Client client, int bufferSize)
+	public PacketWriter(IoSession session, int bufferSize)
 	{
-		this.client = client;
+		this.session = session;
 		buffer = ByteBuffer.allocate(bufferSize);
 		sendQueue = new LinkedList<IPacket>();
 	}
@@ -23,7 +23,7 @@ final public class PacketWriter
 	public void send(IPacket packet)
 	{
 		if(sendQueue.isEmpty()){
-			client.interestWriteOp();
+			session.interestWriteOp();
 		}
 		sendQueue.add(packet);
 	}
@@ -33,7 +33,7 @@ final public class PacketWriter
 		writePacketsToBuffer();
 		buffer.flip();
 		
-		final int nBytesWrite = client.doWrite(buffer);
+		final int nBytesWrite = session.doWrite(buffer);
 		
 		if(nBytesWrite < 0){
 			throw new IOException();
@@ -44,7 +44,7 @@ final public class PacketWriter
 		}else{
 			buffer.clear();
 			if(sendQueue.isEmpty()){
-				client.interestReadOp();
+				session.interestReadOp();
 			}
 		}
 	}

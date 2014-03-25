@@ -96,10 +96,14 @@ public class Client implements IClient, IoSession
 	{
 		logger.info("nio ready recv");
 		try {
-			packetReader.onRecv(actionQueue);
+			packetReader.onRecv();
 		} catch (IOException e) {
 			onLogout();
 			e.printStackTrace();
+			return;
+		}
+		while(packetReader.hasPacket()){
+			actionQueue.addAction(this, packetReader.shiftPacket());
 		}
 	}
 	
