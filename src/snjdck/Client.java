@@ -95,14 +95,24 @@ public class Client implements IClient, IoSession
 	public void onReadyRecv(ActionQueue actionQueue)
 	{
 		logger.info("nio ready recv");
-		packetReader.onRecv(actionQueue);
+		try {
+			packetReader.onRecv(actionQueue);
+		} catch (IOException e) {
+			onLogout();
+			e.printStackTrace();
+		}
 	}
 	
 	@Override
 	public void onReadySend()
 	{
 		logger.info("nio ready send");
-		packetWriter.onSend();
+		try {
+			packetWriter.onSend();
+		} catch (IOException e) {
+			onLogout();
+			e.printStackTrace();
+		}
 	}
 	
 	public void send(int msgId, byte[] msg)

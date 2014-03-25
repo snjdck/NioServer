@@ -28,33 +28,24 @@ final public class PacketWriter
 		sendQueue.add(packet);
 	}
 
-	public void onSend()
+	public void onSend() throws IOException
 	{
 		writePacketsToBuffer();
 		buffer.flip();
 		
-		final int nBytesWrite;
-		
-		try{
-			nBytesWrite = client.doWrite(buffer);
-		}catch(IOException e){
-			client.onLogout();
-			return;
-		}
+		final int nBytesWrite = client.doWrite(buffer);
 		
 		if(nBytesWrite < 0){
-			client.onLogout();
-			return;
+			throw new IOException();
 		}
 		
 		if(buffer.hasRemaining()){
 			buffer.compact();
-			return;
-		}
-		
-		buffer.clear();
-		if(sendQueue.isEmpty()){
-			client.interestReadOp();
+		}else{
+			buffer.clear();
+			if(sendQueue.isEmpty()){
+				client.interestReadOp();
+			}
 		}
 	}
 	

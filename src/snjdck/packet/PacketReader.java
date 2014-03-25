@@ -20,27 +20,15 @@ final public class PacketReader
 		nextPacket = packet;
 	}
 
-	public void onRecv(ActionQueue actionQueue)
+	public void onRecv(ActionQueue actionQueue) throws IOException
 	{
-		final int nBytesRead;
-		
-		try{
-			nBytesRead = client.doRead(buffer);
-		}catch(IOException e){
-			client.onLogout();
-			return;
-		}
-		
+		final int nBytesRead = client.doRead(buffer);
 		if(nBytesRead < 0){
-			client.onLogout();
-			return;
+			throw new IOException();
 		}
-		
-		if(nBytesRead == 0){
-			return;
+		if(nBytesRead > 0){
+			readPacketsFromBuffer(actionQueue);
 		}
-		
-		readPacketsFromBuffer(actionQueue);
 	}
 	
 	private void readPacketsFromBuffer(ActionQueue actionQueue)
