@@ -2,8 +2,6 @@ package snjdck.packet;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.SocketChannel;
 import java.util.LinkedList;
 
 import snjdck.Client;
@@ -25,7 +23,7 @@ final public class PacketWriter
 	public void send(IPacket packet)
 	{
 		if(sendQueue.isEmpty()){
-			client.getSelectionKey().interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+			client.interestWriteOp();
 		}
 		sendQueue.add(packet);
 	}
@@ -35,12 +33,10 @@ final public class PacketWriter
 		writePacketsToBuffer();
 		buffer.flip();
 		
-		SelectionKey selectionKey = client.getSelectionKey();
-		SocketChannel socketChannel = (SocketChannel) selectionKey.channel();
 		final int nBytesWrite;
 		
 		try{
-			nBytesWrite = socketChannel.write(buffer);
+			nBytesWrite = client.doWrite(buffer);
 		}catch(IOException e){
 			client.onLogout();
 			return;
@@ -58,7 +54,7 @@ final public class PacketWriter
 		
 		buffer.clear();
 		if(sendQueue.isEmpty()){
-			selectionKey.interestOps(SelectionKey.OP_READ);
+			client.interestReadOp();
 		}
 	}
 	

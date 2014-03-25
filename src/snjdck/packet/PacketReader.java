@@ -2,7 +2,6 @@ package snjdck.packet;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
 
 import snjdck.Client;
 import snjdck.core.IPacket;
@@ -23,11 +22,10 @@ final public class PacketReader
 
 	public void onRecv(ActionQueue actionQueue)
 	{
-		SocketChannel socketChannel = (SocketChannel) client.getSelectionKey().channel();
 		final int nBytesRead;
 		
 		try{
-			nBytesRead = socketChannel.read(buffer);
+			nBytesRead = client.doRead(buffer);
 		}catch(IOException e){
 			client.onLogout();
 			return;

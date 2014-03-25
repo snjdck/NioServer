@@ -1,6 +1,9 @@
 package snjdck;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
+import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.logging.Logger;
@@ -112,9 +115,29 @@ public class Client implements IClient, IoSession
 		packetWriter.send(packet.createReply(msg));
 	}
 	
-	public SelectionKey getSelectionKey()
+	public void interestReadOp()
 	{
-		return selectionKey;
+		selectionKey.interestOps(SelectionKey.OP_READ);
+	}
+	
+	public void interestWriteOp()
+	{
+		selectionKey.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+	}
+	
+	private SocketChannel getChannel()
+	{
+		return (SocketChannel)selectionKey.channel();
+	}
+	
+	public int doRead(ByteBuffer dst) throws IOException
+	{
+		return getChannel().read(dst);
+	}
+	
+	public int doWrite(ByteBuffer src) throws IOException
+	{
+		return getChannel().write(src);
 	}
 	
 	private ClientState state = ClientState.CONNECTED;
