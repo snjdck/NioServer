@@ -6,9 +6,7 @@ import java.nio.channels.ServerSocketChannel;
 import java.util.logging.Logger;
 
 import snjdck.Client;
-import snjdck.GameWorld;
 import snjdck.PacketDispatcherFactory;
-import snjdck.core.IGameWorld;
 import snjdck.core.IPacketDispatcher;
 import snjdck.core.IoSession;
 import snjdck.util.SocketFactory;
@@ -17,8 +15,7 @@ public class LogicServer extends Server
 {
 	static public void main(String[] args)
 	{
-		IGameWorld gameWorld = new GameWorld();
-		LogicServer gameServer = new LogicServer(gameWorld, 7410);
+		LogicServer gameServer = new LogicServer(7410);
 		
 		try{
 			gameServer.startup();
@@ -30,17 +27,15 @@ public class LogicServer extends Server
 	
 	static private final Logger logger = Logger.getLogger(LogicServer.class.getName());
 	
-	private final IGameWorld gameWorld;
 	private final int port;
 	
 	private IPacketDispatcher packetDispatcher;
 	private ServerSocketChannel serverSocketChannel;
 	
-	public LogicServer(IGameWorld gameWorld, int port)
+	public LogicServer(int port)
 	{
 		super();
 		packetDispatcher = PacketDispatcherFactory.newPacketDispatcher();
-		this.gameWorld = gameWorld;
 		this.port = port;
 	}
 	
@@ -68,13 +63,12 @@ public class LogicServer extends Server
 	@Override
 	protected IoSession createSession(SelectionKey selectionKey)
 	{
-		Client client = new Client(0, gameWorld, selectionKey, packetDispatcher);
+		Client client = new Client(0, selectionKey, packetDispatcher);
 		return client;
 	}
 
 	@Override
 	protected void onUpdate(long timeElapsed)
 	{
-		gameWorld.onUpdate(timeElapsed);
 	}
 }

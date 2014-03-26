@@ -22,39 +22,37 @@ public class InjectionPoints implements IInjectionPoint
 		
 		injectionPointCtor = new InjectionPointConstructor(clsRef.getName(), null, null);
 		for(Field field : clsRef.getFields()){
-			Inject injectTag = field.getAnnotation(Inject.class);
-			if(injectTag != null){
-				addInjectionPointProperty(field, injectTag);
+			if(field.isAnnotationPresent(Inject.class)){
+				addInjectionPointProperty(field);
 				System.out.println("bingo prop");
 			}
 		}
 		for(Method method : clsRef.getMethods()){
-			Inject injectTag = method.getAnnotation(Inject.class);
-			if(injectTag != null){
-				addInjectionPointMethod(method, injectTag);
+			if(method.isAnnotationPresent(Inject.class)){
+				addInjectionPointMethod(method);
 				System.out.println("bingo method");
 			}
 		}
 	}
 	
-	private void addInjectionPointProperty(Field varNode, Inject injectTag)
+	private void addInjectionPointProperty(Field field)
 	{
 		injectionPointList.add(
 			new InjectionPointProperty(
-				varNode.getName(),
-				injectTag,
-				varNode.getType()
+				field.getName(),
+				field.getAnnotation(Inject.class),
+				field.getType()
 			)
 		);
 	}
 	
-	private void addInjectionPointMethod(Method methodNode, Inject injectTag)
+	private void addInjectionPointMethod(Method method)
 	{
 		injectionPointList.add(
 			new InjectionPointMethod(
-				methodNode.getName(),
-				injectTag,
-				methodNode.getParameterTypes()
+				method.getName(),
+				method.getAnnotation(Inject.class),
+				method.getParameterTypes()
 			)
 		);
 	}

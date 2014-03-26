@@ -5,15 +5,14 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
-import java.util.HashMap;
 import java.util.logging.Logger;
 
 import snjdck.core.ClientState;
 import snjdck.core.IClient;
-import snjdck.core.IGameWorld;
 import snjdck.core.IPacket;
 import snjdck.core.IPacketDispatcher;
 import snjdck.core.IoSession;
+import snjdck.ioc.tag.Inject;
 import snjdck.packet.Packet;
 import snjdck.packet.PacketReader;
 import snjdck.packet.PacketWriter;
@@ -21,17 +20,19 @@ import snjdck.server.action.ActionQueue;
 
 public class Client implements IClient, IoSession
 {
+	@Inject
+	public ClientManager clientMgr;
+	
 	private static final Logger logger = Logger.getLogger(Client.class.getName());
 	static private final Charset charset = Charset.forName("UTF-8");
 	
 	final private int id;
 	private final IPacketDispatcher packetDispatcher;
 	
-	public Client(int id, IGameWorld gameWorld, SelectionKey selectionKey, IPacketDispatcher packetDispatcher)
+	public Client(int id, SelectionKey selectionKey, IPacketDispatcher packetDispatcher)
 	{
 		this.id = id;
 		this.packetDispatcher = packetDispatcher;
-		this.gameWorld = gameWorld;
 		this.selectionKey = selectionKey;
 		
 		packetReader = new PacketReader(this, 0x20000, new Packet());
@@ -76,7 +77,7 @@ public class Client implements IClient, IoSession
 
 	public void login()
 	{
-		gameWorld.getClientManager().addClient(this);
+		clientMgr.addClient(this);
 	}
 	
 	@Override
@@ -88,7 +89,7 @@ public class Client implements IClient, IoSession
 	public void logout()
 	{
 		selectionKey.cancel();
-		gameWorld.getClientManager().removeClient(this);
+		clientMgr.removeClient(this);
 	}
 	
 	@Override
@@ -156,7 +157,6 @@ public class Client implements IClient, IoSession
 	
 	private ClientState state = ClientState.CONNECTED;
 	
-	public final IGameWorld gameWorld;
 	private final SelectionKey selectionKey;
 	
 	private final PacketReader packetReader;

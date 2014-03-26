@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.logging.Logger;
 
 import snjdck.Client;
-import snjdck.GameWorld;
 import snjdck.core.IPacket;
 import snjdck.core.IPacketHandler;
 import snjdck.util.Amf3;
