@@ -20,6 +20,6 @@ public class DefaultPacketHandler implements IPacketHandler
 		
 		logger.info("recv msg:" + obj.get("msg"));
 		obj.put("msg", "i am java nio reply");
-		client.reply(packet, amf.encode(obj));
+		client.send(1, amf.encode(obj));
 	}
 }

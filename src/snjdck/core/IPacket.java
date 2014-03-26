@@ -11,5 +11,4 @@ public interface IPacket
 	byte[] getBody();
 	
 	IPacket create();
-	IPacket createReply(byte[] msg);
 }

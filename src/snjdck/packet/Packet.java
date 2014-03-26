@@ -100,10 +100,4 @@ final public class Packet implements IPacket
 	{
 		return body;
 	}
-
-	@Override
-	public IPacket createReply(byte[] msg)
-	{
-		return Create(msgId, msg);
-	}
 }

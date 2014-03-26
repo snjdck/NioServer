@@ -125,11 +125,6 @@ public class Client implements IClient, IoSession
 		packetWriter.send(Packet.Create(msgId, msg));
 	}
 	
-	public void reply(IPacket packet, byte[] msg)
-	{
-		packetWriter.send(packet.createReply(msg));
-	}
-	
 	public void interestReadOp()
 	{
 		selectionKey.interestOps(SelectionKey.OP_READ);
