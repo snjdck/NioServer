@@ -15,12 +15,13 @@ public interface IInjector
 
 	void unmap(Class<?> keyCls, String id);
 
-	Object getInstance(Object keyClsOrName, String id);
+	Object getInstance(Class<?> clsRef, String id);
 	Object newInstance(Class<?> clsRef);
+	
 	void injectInto(Object target);
 
-	List<String> getTypesNeedToBeInjected(Class<?> keyClsOrName);
+	List<Class<?>> getTypesNeedToBeInjected(Class<?> clsRef);
 
-	IInjector getParent();
-	void setParent(IInjector value);
+	IInjector parent();
+	void parent(IInjector value);
 }

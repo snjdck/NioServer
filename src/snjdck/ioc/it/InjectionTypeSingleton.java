@@ -15,7 +15,9 @@ public class InjectionTypeSingleton implements IInjectionType
 	@Override
 	public Object getValue(IInjector injector, String id)
 	{
-		if (null != id) return null;
+		if(null != id){
+			return null;
+		}
 		if(null == val){
 			val = injector.newInstance(cls);
 		}

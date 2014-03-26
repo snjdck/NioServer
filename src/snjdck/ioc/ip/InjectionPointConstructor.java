@@ -5,12 +5,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 import snjdck.ioc.IInjector;
+import snjdck.ioc.tag.Inject;
 
-public class InjectionPointConstructor extends InjectionPoint
+class InjectionPointConstructor extends InjectionPoint
 {
 	private Class<?>[] argTypes;
 	
-	public InjectionPointConstructor(String name, Object info, Class<?>[] argTypes)
+	public InjectionPointConstructor(String name, Inject info, Class<?>[] argTypes)
 	{
 		super(name, info);
 		this.argTypes = argTypes;
@@ -43,10 +44,10 @@ public class InjectionPointConstructor extends InjectionPoint
 		return null;
 	}
 
-	public void getTypesNeedToBeInjected(List<String> result)
+	public void getTypesNeedToBeInjected(List<Class<?>> result)
 	{
 		for(Class<?> argType : argTypes){
-			result.add(argType.getName());
+			result.add(argType);
 		}
 	}
 }

@@ -4,12 +4,13 @@ import java.lang.reflect.Field;
 import java.util.List;
 
 import snjdck.ioc.IInjector;
+import snjdck.ioc.tag.Inject;
 
-public class InjectionPointProperty extends InjectionPoint implements IInjectionPoint
+class InjectionPointProperty extends InjectionPoint implements IInjectionPoint
 {
 	private Class<?> argType;
 	
-	public InjectionPointProperty(String name, Object info, Class<?> argType)
+	public InjectionPointProperty(String name, Inject info, Class<?> argType)
 	{
 		super(name, info);
 		this.argType = argType;
@@ -43,8 +44,8 @@ public class InjectionPointProperty extends InjectionPoint implements IInjection
 	}
 
 	@Override
-	public void getTypesNeedToBeInjected(List<String> result)
+	public void getTypesNeedToBeInjected(List<Class<?>> result)
 	{
-		result.add(argType.getName());
+		result.add(argType);
 	}
 }

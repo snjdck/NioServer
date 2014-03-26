@@ -88,7 +88,7 @@ public class InjectionPoints implements IInjectionPoint
 	}
 
 	@Override
-	public void getTypesNeedToBeInjected(List<String> result)
+	public void getTypesNeedToBeInjected(List<Class<?>> result)
 	{
 		injectionPointCtor.getTypesNeedToBeInjected(result);
 		for(IInjectionPoint injectionPoint: injectionPointList){

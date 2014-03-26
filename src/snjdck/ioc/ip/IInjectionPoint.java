@@ -8,5 +8,5 @@ public interface IInjectionPoint
 {
 	void injectInto(Object target, IInjector injector);
 	int getPriority();
-	void getTypesNeedToBeInjected(List<String> result);
+	void getTypesNeedToBeInjected(List<Class<?>> result);
 }

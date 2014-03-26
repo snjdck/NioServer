@@ -1,13 +1,14 @@
 package snjdck.ioc.ip;
 
 import snjdck.ioc.IInjector;
+import snjdck.ioc.tag.Inject;
 
 abstract class InjectionPoint
 {
 	protected String name;
-	protected Object info;
+	protected Inject info;
 	
-	public InjectionPoint(String name, Object info)
+	public InjectionPoint(String name, Inject info)
 	{
 		this.name = name;
 		this.info = info;

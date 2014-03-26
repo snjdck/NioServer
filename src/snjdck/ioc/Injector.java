@@ -69,21 +69,21 @@ public class Injector implements IInjector
 		
 		do{
 			injectionType = injector.getMapping(key);
-			injector = injector.getParent();
+			injector = injector.parent();
 		}while(null == injectionType && null != injector);
 		
 		return injectionType;
 	}
 
 	@Override
-	public Object getInstance(Object keyClsOrName, String id)
+	public Object getInstance(Class<?> clsRef, String id)
 	{
-		IInjectionType injectionType = getInjectionType(getKey(keyClsOrName, id));
+		IInjectionType injectionType = getInjectionType(getKey(clsRef, id));
 	
 		if(injectionType != null){
 			return injectionType.getValue(this, null);
 		}else if(id != null){
-			injectionType = getInjectionType(getKey(keyClsOrName, null));
+			injectionType = getInjectionType(getKey(clsRef, null));
 		}
 		if(null == injectionType){
 			return null;
@@ -104,21 +104,21 @@ public class Injector implements IInjector
 	}
 
 	@Override
-	public List<String> getTypesNeedToBeInjected(Class<?> keyCls)
+	public List<Class<?>> getTypesNeedToBeInjected(Class<?> clsRef)
 	{
-		List<String> result = new ArrayList<String>();
-		getInjectionPoint(keyCls).getTypesNeedToBeInjected(result);
+		List<Class<?>> result = new ArrayList<Class<?>>();
+		getInjectionPoint(clsRef).getTypesNeedToBeInjected(result);
 		return result;
 	}
 
 	@Override
-	public IInjector getParent()
+	public IInjector parent()
 	{
 		return parent;
 	}
 
 	@Override
-	public void setParent(IInjector value)
+	public void parent(IInjector value)
 	{
 		parent = value;
 	}
