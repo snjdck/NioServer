@@ -2,7 +2,7 @@ package snjdck.ioc.it;
 
 import snjdck.ioc.IInjector;
 
-public interface IInjectionType
+public interface IInjectionType<T>
 {
-	Object getValue(IInjector injector, String id);
+	T getValue(IInjector injector, String id);
 }

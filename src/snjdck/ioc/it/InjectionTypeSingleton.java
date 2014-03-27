@@ -2,18 +2,18 @@ package snjdck.ioc.it;
 
 import snjdck.ioc.IInjector;
 
-public class InjectionTypeSingleton implements IInjectionType
+public class InjectionTypeSingleton<T> implements IInjectionType<T>
 {
-	private Class<?> cls;
-	private Object val;
+	private Class<T> cls;
+	private T val;
 	
-	public InjectionTypeSingleton(Class<?> cls)
+	public InjectionTypeSingleton(Class<T> cls)
 	{
 		this.cls = cls;
 	}
 	
 	@Override
-	public Object getValue(IInjector injector, String id)
+	public T getValue(IInjector injector, String id)
 	{
 		if(null != id){
 			return null;

@@ -2,20 +2,20 @@ package snjdck.ioc.it;
 
 import snjdck.ioc.IInjector;
 
-public class InjectionTypeValue implements IInjectionType
+public class InjectionTypeValue<T> implements IInjectionType<T>
 {
 	private boolean needInject;
 	private boolean hasInjected;
-	private Object value;
+	private T value;
 	
-	public InjectionTypeValue(Object value, boolean needInject)
+	public InjectionTypeValue(T value, boolean needInject)
 	{
 		this.needInject = needInject;
 		this.value = value;
 	}
 
 	@Override
-	public Object getValue(IInjector injector, String id)
+	public T getValue(IInjector injector, String id)
 	{
 		if(null != id){
 			return null;
