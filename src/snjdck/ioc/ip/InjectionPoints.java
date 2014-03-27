@@ -1,5 +1,6 @@
 package snjdck.ioc.ip;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -10,17 +11,17 @@ import java.util.List;
 import snjdck.ioc.IInjector;
 import snjdck.ioc.tag.Inject;
 
-public class InjectionPoints implements IInjectionPoint
+public class InjectionPoints<T> implements IInjectionPoint
 {
-	private InjectionPointConstructor injectionPointCtor;
+	private InjectionPointConstructor<T> injectionPointCtor;
 	private final List<IInjectionPoint> injectionPointList;
 	private boolean hasSort;
 
-	public InjectionPoints(Class<?> clsRef)
+	public InjectionPoints(Class<T> clsRef)
 	{
 		injectionPointList = new ArrayList<IInjectionPoint>();
 		
-		injectionPointCtor = new InjectionPointConstructor(clsRef.getName(), null, null);
+		initCtor(clsRef);
 		for(Field field : clsRef.getFields()){
 			if(field.isAnnotationPresent(Inject.class)){
 				addInjectionPointProperty(field);
@@ -35,15 +36,33 @@ public class InjectionPoints implements IInjectionPoint
 		}
 	}
 	
-	private void addInjectionPointProperty(Field field)
+	@SuppressWarnings("unchecked")
+	private void initCtor(Class<T> clsRef)
 	{
-		injectionPointList.add(
-			new InjectionPointProperty(
-				field.getName(),
-				field.getAnnotation(Inject.class),
-				field.getType()
-			)
-		);
+		Constructor<?>[] ctorList = clsRef.getConstructors();
+		int ctorAmount = ctorList.length;
+		if(ctorAmount <= 0){
+			return;
+		}
+		for(Constructor<?> ctor : ctorList){
+			if(ctor.isAnnotationPresent(Inject.class)){
+				addInjectionPointConstructor((Constructor<T>)ctor);
+			}
+		}
+		if(injectionPointCtor != null){
+			return;
+		}
+		for(Constructor<?> ctor : ctorList){
+			addInjectionPointConstructor((Constructor<T>)ctor);
+			break;
+		}
+	}
+	
+	private void addInjectionPointConstructor(Constructor<T> ctor)
+	{
+		assert null == injectionPointCtor : "multi constructor inject error!";
+		injectionPointCtor = new InjectionPointConstructor<T>(ctor.getDeclaringClass(), ctor.getParameterTypes());
+		System.out.println("bingo ctor");
 	}
 	
 	private void addInjectionPointMethod(Method method)
@@ -57,9 +76,20 @@ public class InjectionPoints implements IInjectionPoint
 		);
 	}
 	
-	public Object newInstance(IInjector injector)
+	private void addInjectionPointProperty(Field field)
 	{
-		Object obj = injectionPointCtor.newInstance(injector);
+		injectionPointList.add(
+			new InjectionPointProperty(
+				field.getName(),
+				field.getAnnotation(Inject.class),
+				field.getType()
+			)
+		);
+	}
+	
+	public T newInstance(IInjector injector)
+	{
+		T obj = injectionPointCtor.newInstance(injector);
 		injectInto(obj, injector);
 		return obj;
 	}
@@ -90,7 +120,9 @@ public class InjectionPoints implements IInjectionPoint
 	@Override
 	public void getTypesNeedToBeInjected(List<Class<?>> result)
 	{
-		injectionPointCtor.getTypesNeedToBeInjected(result);
+		if(injectionPointCtor != null){
+			injectionPointCtor.getTypesNeedToBeInjected(result);
+		}
 		for(IInjectionPoint injectionPoint: injectionPointList){
 			injectionPoint.getTypesNeedToBeInjected(result);
 		}

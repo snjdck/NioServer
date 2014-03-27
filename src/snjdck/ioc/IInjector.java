@@ -6,29 +6,30 @@ import snjdck.ioc.it.IInjectionType;
 
 public interface IInjector
 {
-	void mapValue(Class<?> keyCls, Object value, String id, Boolean needInject);
-	void mapValue(Class<?> keyCls, Object value, String id);
-	void mapValue(Class<?> keyCls, Object value);
+	<T> void mapValue(Class<? super T> keyCls, T value, String id, Boolean needInject);
+	<T> void mapValue(Class<? super T> keyCls, T value, String id);
+	<T> void mapValue(Class<? super T> keyCls, T value);
 	
-	void mapClass(Class<?> keyCls, Class<?> valueCls, String id);
-	void mapClass(Class<?> keyCls, Class<?> valueCls);
-	void mapClass(Class<?> keyCls);
+	<T> void mapClass(Class<? super T> keyCls, Class<T> valueCls, String id);
+	<T> void mapClass(Class<T> keyCls, Class<? extends T> valueCls);
+	<T >void mapClass(Class<T> keyCls);
 	
-	void mapSingleton(Class<?> keyCls, Class<?> valueCls, String id);
-	void mapSingleton(Class<?> keyCls, Class<?> valueCls);
-	void mapSingleton(Class<?> keyCls);
+	<T> void mapSingleton(Class<? super T> keyCls, Class<T> valueCls, String id);
+	<T> void mapSingleton(Class<T> keyCls, Class<? extends T> valueCls);
+	<T> void mapSingleton(Class<T> keyCls);
 	
-	void mapRule(Class<?> keyCls, IInjectionType rule);
+	<T> void mapRule(Class<T> keyCls, IInjectionType<? extends T> rule);
 
 	void unmap(Class<?> keyCls, String id);
 	void unmap(Class<?> keyCls);
 	
-	IInjectionType getMapping(String key);
+	<T> IInjectionType<T> getMapping(Class<T> clsRef, String id);
 
-	Object getInstance(Class<?> clsRef, String id);
-	Object getInstance(Class<?> clsRef);
+	<T> T getInstance(Class<T> clsRef, String id);
+	<T> T getInstance(Class<T> clsRef);
+	Object[] getInstance(Class<?>[] argTypes);
 	
-	Object newInstance(Class<?> clsRef);
+	<T> T newInstance(Class<T> clsRef);
 	
 	void injectInto(Object target);
 

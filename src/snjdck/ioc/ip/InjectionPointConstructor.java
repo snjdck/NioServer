@@ -1,47 +1,24 @@
 package snjdck.ioc.ip;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 import snjdck.ioc.IInjector;
-import snjdck.ioc.tag.Inject;
+import snjdck.util.Lambda;
 
-class InjectionPointConstructor extends InjectionPoint
+class InjectionPointConstructor<T>
 {
+	private Class<T> ctor;
 	private Class<?>[] argTypes;
 	
-	public InjectionPointConstructor(String name, Inject info, Class<?>[] argTypes)
+	public InjectionPointConstructor(Class<T> ctor, Class<?>[] argTypes)
 	{
-		super(name, info);
+		this.ctor = ctor;
 		this.argTypes = argTypes;
 	}
 	
-	public Object newInstance(IInjector injector)
+	public T newInstance(IInjector injector)
 	{
-		try{
-			Class<?> clazz = Class.forName(name);
-			if(null == argTypes || argTypes.length <= 0){
-				return clazz.newInstance();
-			}
-			Constructor<?> constructor = clazz.getConstructor(new Class[argTypes.length]);
-			return constructor.newInstance(getArgValues(argTypes, injector));
-		}catch(ClassNotFoundException e){
-			e.printStackTrace();
-		}catch(InstantiationException e){
-			e.printStackTrace();
-		}catch(IllegalAccessException e){
-			e.printStackTrace();
-		}catch(SecurityException e){
-			e.printStackTrace();
-		}catch(NoSuchMethodException e){
-			e.printStackTrace();
-		}catch(IllegalArgumentException e){
-			e.printStackTrace();
-		}catch(InvocationTargetException e){
-			e.printStackTrace();
-		}
-		return null;
+		return Lambda.Apply(ctor, injector.getInstance(argTypes));
 	}
 
 	public void getTypesNeedToBeInjected(List<Class<?>> result)

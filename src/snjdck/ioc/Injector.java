@@ -13,76 +13,70 @@ import snjdck.ioc.it.InjectionTypeValue;
 
 public class Injector implements IInjector
 {
-	private Map<String, IInjectionType> dict;
+	private Map<String, IInjectionType<?>> dict;
 	private IInjector parent;
 	
 	public Injector()
 	{
-		dict = new HashMap<String, IInjectionType>();
+		dict = new HashMap<String, IInjectionType<?>>();
 	}
 
 	@Override
-	public void mapValue(Class<?> keyCls, Object value, String id, Boolean needInject)
+	public <T> void mapValue(Class<? super T> keyCls, T value, String id, Boolean needInject)
 	{
-		dict.put(getKey(keyCls, id), new InjectionTypeValue(value, needInject));
+		dict.put(getKey(keyCls, id), new InjectionTypeValue<T>(value, needInject));
 	}
 
 	@Override
-	public void mapValue(Class<?> keyCls, Object value, String id)
+	public <T> void mapValue(Class<? super T> keyCls, T value, String id)
 	{
 		mapValue(keyCls, value, id, true);
 	}
 
 	@Override
-	public void mapValue(Class<?> keyCls, Object value)
+	public <T> void mapValue(Class<? super T> keyCls, T value)
 	{
 		mapValue(keyCls, value, null);
 	}
 	
 	@Override
-	public void mapClass(Class<?> keyCls, Class<?> valueCls, String id)
+	public <T> void mapClass(Class<? super T> keyCls, Class<T> valueCls, String id)
 	{
-		if(null == valueCls){
-			valueCls = keyCls;
-		}
-		dict.put(getKey(keyCls, id), new InjectionTypeClass(valueCls));
+		dict.put(getKey(keyCls, id), new InjectionTypeClass<T>(valueCls));
 	}
 
 	@Override
-	public void mapClass(Class<?> keyCls, Class<?> valueCls)
+	public <T> void mapClass(Class<T> keyCls, Class<? extends T> valueCls)
 	{
 		mapClass(keyCls, valueCls, null);
 	}
 
 	@Override
-	public void mapClass(Class<?> keyCls)
+	public <T> void mapClass(Class<T> keyCls)
 	{
 		mapClass(keyCls, keyCls);
 	}
 	
 	@Override
-	public void mapSingleton(Class<?> keyCls, Class<?> valueCls, String id)
+	public <T> void mapSingleton(Class<? super T> keyCls, Class<T> valueCls, String id)
 	{
-		if(null == valueCls){
-			valueCls = keyCls;
-		}
-		dict.put(getKey(keyCls, id), new InjectionTypeSingleton(valueCls));
+		dict.put(getKey(keyCls, id), new InjectionTypeSingleton<T>(valueCls));
 	}
 
 	@Override
-	public void mapSingleton(Class<?> keyCls, Class<?> valueCls)
+	public <T> void mapSingleton(Class<T> keyCls, Class<? extends T> valueCls)
 	{
 		mapSingleton(keyCls, valueCls, null);
 	}
 
 	@Override
-	public void mapSingleton(Class<?> keyCls)
+	public <T> void mapSingleton(Class<T> keyCls)
 	{
 		mapSingleton(keyCls, keyCls);
 	}
 	
 	@Override
-	public void mapRule(Class<?> keyCls, IInjectionType rule)
+	public <T> void mapRule(Class<T> keyCls, IInjectionType<? extends T> rule)
 	{
 		dict.put(getKey(keyCls, null), rule);
 	}
@@ -99,21 +93,22 @@ public class Injector implements IInjector
 		unmap(keyCls, null);
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
-	public IInjectionType getMapping(String key)
+	public <T> IInjectionType<T> getMapping(Class<T> clsRef, String id)
 	{
-		return dict.get(key);
+		return (IInjectionType<T>)dict.get(getKey(clsRef, id));
 	}
 	
 	@Override
-	public Object getInstance(Class<?> clsRef, String id)
+	public <T> T getInstance(Class<T> clsRef, String id)
 	{
-		IInjectionType injectionType = getInjectionType(getKey(clsRef, id));
+		IInjectionType<T> injectionType = getInjectionType(clsRef, id);
 		
 		if(injectionType != null){
 			return injectionType.getValue(this, null);
 		}else if(id != null){
-			injectionType = getInjectionType(getKey(clsRef));
+			injectionType = getInjectionType(clsRef, null);
 		}
 		if(null == injectionType){
 			return null;
@@ -122,13 +117,23 @@ public class Injector implements IInjector
 	}
 
 	@Override
-	public Object getInstance(Class<?> clsRef)
+	public <T> T getInstance(Class<T> clsRef)
 	{
 		return getInstance(clsRef, null);
 	}
 
 	@Override
-	public Object newInstance(Class<?> clsRef)
+	public Object[] getInstance(Class<?>[] argTypes)
+	{
+		Object[] argValues = new Object[argTypes.length];
+		for(int i = 0; i < argTypes.length; i++){
+			argValues[i] = getInstance(argTypes[i], null);
+		}
+		return argValues;
+	}
+
+	@Override
+	public <T> T newInstance(Class<T> clsRef)
 	{
 		return getInjectionPoint(clsRef).newInstance(this);
 	}
@@ -159,13 +164,13 @@ public class Injector implements IInjector
 		parent = value;
 	}
 	
-	private IInjectionType getInjectionType(String key)
+	private <T> IInjectionType<T> getInjectionType(Class<T> clsRef, String id)
 	{
-		IInjectionType injectionType;
+		IInjectionType<T> injectionType;
 		IInjector injector = this;
 		
 		do{
-			injectionType = injector.getMapping(key);
+			injectionType = injector.getMapping(clsRef, id);
 			injector = injector.parent();
 		}while(null == injectionType && null != injector);
 		
@@ -181,19 +186,15 @@ public class Injector implements IInjector
 		return key + "@" + id;
 	}
 	
-	private String getKey(Class<?> keyCls)
-	{
-		return getKey(keyCls, null);
-	}
-	
-	static private InjectionPoints getInjectionPoint(Class<?> clsRef)
+	@SuppressWarnings("unchecked")
+	static private <T> InjectionPoints<T> getInjectionPoint(Class<T> clsRef)
 	{
 		String clsName = clsRef.getName();
 		if(clsInfoDict.containsKey(clsName) == false){
-			clsInfoDict.put(clsName, new InjectionPoints(clsRef));
+			clsInfoDict.put(clsName, new InjectionPoints<T>(clsRef));
 		}
-		return clsInfoDict.get(clsName);
+		return (InjectionPoints<T>)clsInfoDict.get(clsName);
 	}
 	
-	static private final Map<String, InjectionPoints> clsInfoDict = new HashMap<String, InjectionPoints>();
+	static private final Map<String, InjectionPoints<?>> clsInfoDict = new HashMap<String, InjectionPoints<?>>();
 }

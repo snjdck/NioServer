@@ -4,7 +4,7 @@ import java.util.List;
 
 import snjdck.ioc.IInjector;
 
-public interface IInjectionPoint
+interface IInjectionPoint
 {
 	void injectInto(Object target, IInjector injector);
 	int getPriority();
