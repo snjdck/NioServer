@@ -3,6 +3,7 @@ package snjdck.ioc;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import snjdck.ioc.ip.InjectionPoints;
 import snjdck.ioc.it.IInjectionType;
@@ -12,7 +13,7 @@ import snjdck.ioc.it.InjectionTypeValue;
 
 public class Injector implements IInjector
 {
-	private HashMap<String, IInjectionType> dict;
+	private Map<String, IInjectionType> dict;
 	private IInjector parent;
 	
 	public Injector()
@@ -27,6 +28,18 @@ public class Injector implements IInjector
 	}
 
 	@Override
+	public void mapValue(Class<?> keyCls, Object value, String id)
+	{
+		mapValue(keyCls, value, id, true);
+	}
+
+	@Override
+	public void mapValue(Class<?> keyCls, Object value)
+	{
+		mapValue(keyCls, value, null);
+	}
+	
+	@Override
 	public void mapClass(Class<?> keyCls, Class<?> valueCls, String id)
 	{
 		if(null == valueCls){
@@ -35,6 +48,18 @@ public class Injector implements IInjector
 		dict.put(getKey(keyCls, id), new InjectionTypeClass(valueCls));
 	}
 
+	@Override
+	public void mapClass(Class<?> keyCls, Class<?> valueCls)
+	{
+		mapClass(keyCls, valueCls, null);
+	}
+
+	@Override
+	public void mapClass(Class<?> keyCls)
+	{
+		mapClass(keyCls, keyCls);
+	}
+	
 	@Override
 	public void mapSingleton(Class<?> keyCls, Class<?> valueCls, String id)
 	{
@@ -45,50 +70,61 @@ public class Injector implements IInjector
 	}
 
 	@Override
+	public void mapSingleton(Class<?> keyCls, Class<?> valueCls)
+	{
+		mapSingleton(keyCls, valueCls, null);
+	}
+
+	@Override
+	public void mapSingleton(Class<?> keyCls)
+	{
+		mapSingleton(keyCls, keyCls);
+	}
+	
+	@Override
 	public void mapRule(Class<?> keyCls, IInjectionType rule)
 	{
 		dict.put(getKey(keyCls, null), rule);
 	}
-
-	@Override
-	public IInjectionType getMapping(String key)
-	{
-		return dict.get(key);
-	}
-
+	
 	@Override
 	public void unmap(Class<?> keyCls, String id)
 	{
 		dict.remove(getKey(keyCls, id));
 	}
-	
-	private IInjectionType getInjectionType(String key)
-	{
-		IInjectionType injectionType;
-		IInjector injector = this;
-		
-		do{
-			injectionType = injector.getMapping(key);
-			injector = injector.parent();
-		}while(null == injectionType && null != injector);
-		
-		return injectionType;
-	}
 
+	@Override
+	public void unmap(Class<?> keyCls)
+	{
+		unmap(keyCls, null);
+	}
+	
+	@Override
+	public IInjectionType getMapping(String key)
+	{
+		return dict.get(key);
+	}
+	
 	@Override
 	public Object getInstance(Class<?> clsRef, String id)
 	{
 		IInjectionType injectionType = getInjectionType(getKey(clsRef, id));
-	
+		
 		if(injectionType != null){
 			return injectionType.getValue(this, null);
 		}else if(id != null){
-			injectionType = getInjectionType(getKey(clsRef, null));
+			injectionType = getInjectionType(getKey(clsRef));
 		}
 		if(null == injectionType){
 			return null;
 		}
 		return injectionType.getValue(this, id);
+	}
+
+	@Override
+	public Object getInstance(Class<?> clsRef)
+	{
+		return getInstance(clsRef, null);
 	}
 
 	@Override
@@ -123,15 +159,31 @@ public class Injector implements IInjector
 		parent = value;
 	}
 	
-	private String getKey(Object keyClsOrName, String id)
+	private IInjectionType getInjectionType(String key)
 	{
-		String key = null;
-		if(keyClsOrName instanceof Class){
-			key = ((Class<?>)keyClsOrName).getName();
-		}else{
-			key = String.valueOf(keyClsOrName);
+		IInjectionType injectionType;
+		IInjector injector = this;
+		
+		do{
+			injectionType = injector.getMapping(key);
+			injector = injector.parent();
+		}while(null == injectionType && null != injector);
+		
+		return injectionType;
+	}
+	
+	private String getKey(Class<?> keyCls, String id)
+	{
+		String key = keyCls.getName();
+		if(null == id || id.length() <= 0){
+			return key;
 		}
-		return id != null ? (key + "@" + id) : key;
+		return key + "@" + id;
+	}
+	
+	private String getKey(Class<?> keyCls)
+	{
+		return getKey(keyCls, null);
 	}
 	
 	static private InjectionPoints getInjectionPoint(Class<?> clsRef)
@@ -143,5 +195,5 @@ public class Injector implements IInjector
 		return clsInfoDict.get(clsName);
 	}
 	
-	static private final HashMap<String, InjectionPoints> clsInfoDict = new HashMap<String, InjectionPoints>();
+	static private final Map<String, InjectionPoints> clsInfoDict = new HashMap<String, InjectionPoints>();
 }
