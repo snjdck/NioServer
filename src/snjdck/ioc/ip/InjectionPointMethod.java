@@ -3,23 +3,23 @@ package snjdck.ioc.ip;
 import java.util.List;
 
 import snjdck.ioc.IInjector;
-import snjdck.ioc.tag.Inject;
 import snjdck.util.Lambda;
 
-class InjectionPointMethod extends InjectionPoint implements IInjectionPoint
+class InjectionPointMethod implements IInjectionPoint
 {
+	private String methodName;
 	private Class<?>[] argTypes;
 	
-	public InjectionPointMethod(String name, Inject info, Class<?>[] argTypes)
+	public InjectionPointMethod(String methodName, Class<?>[] argTypes)
 	{
-		super(name, info);
+		this.methodName = methodName;
 		this.argTypes = argTypes;
 	}
 
 	@Override
 	public void injectInto(Object target, IInjector injector)
 	{
-		Lambda.Call(target, name, injector.getInstance(argTypes));
+		Lambda.Call(target, methodName, injector.getInstance(argTypes));
 	}
 
 	@Override

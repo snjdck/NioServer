@@ -6,24 +6,27 @@ import snjdck.ioc.IInjector;
 import snjdck.ioc.tag.Inject;
 import snjdck.util.Lambda;
 
-class InjectionPointProperty extends InjectionPoint implements IInjectionPoint
+class InjectionPointProperty implements IInjectionPoint
 {
+	private String fieldName;
+	private Inject tagInfo;
 	private Class<?> argType;
 	
-	public InjectionPointProperty(String name, Inject info, Class<?> argType)
+	public InjectionPointProperty(String fieldName, Inject tagInfo, Class<?> argType)
 	{
-		super(name, info);
+		this.fieldName = fieldName;
+		this.tagInfo = tagInfo;
 		this.argType = argType;
 	}
 
 	@Override
 	public void injectInto(Object target, IInjector injector)
 	{
-		Object val = injector.getInstance(argType, info.id());
+		Object val = injector.getInstance(argType, tagInfo.id());
 		if(null == val){
 			return;
 		}
-		Lambda.SetField(target, name, val);
+		Lambda.SetField(target, fieldName, val);
 	}
 
 	@Override

@@ -79,7 +79,6 @@ public class InjectionPoints<T> implements IInjectionPoint
 		injectionPointList.add(
 			new InjectionPointMethod(
 				method.getName(),
-				method.getAnnotation(Inject.class),
 				method.getParameterTypes()
 			)
 		);
