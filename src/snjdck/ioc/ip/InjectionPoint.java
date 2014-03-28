@@ -6,17 +6,46 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import snjdck.ioc.IInjector;
 import snjdck.ioc.tag.Inject;
 
-public class InjectionPoints<T> implements IInjectionPoint
+final public class InjectionPoint<T>
 {
+	static private final Map<String, InjectionPoint<?>> injectionPointDict = new HashMap<String, InjectionPoint<?>>();
+	
+	@SuppressWarnings("unchecked")
+	static private <T> InjectionPoint<T> Fetch(Class<T> clsRef)
+	{
+		String clsName = clsRef.getName();
+		if(injectionPointDict.containsKey(clsName) == false){
+			injectionPointDict.put(clsName, new InjectionPoint<T>(clsRef));
+		}
+		return (InjectionPoint<T>)injectionPointDict.get(clsName);
+	}
+	
+	static public <T> T NewInstance(Class<T> clsRef, IInjector injector)
+	{
+		return Fetch(clsRef).newInstance(injector);
+	}
+
+	static public void InjectInto(Object target, IInjector injector)
+	{
+		Fetch(target.getClass()).injectInto(target, injector);
+	}
+	
+	static public List<Class<?>> GetTypesNeedInject(Class<?> clsRef)
+	{
+		return Fetch(clsRef).getTypesNeedInject();
+	}
+	
 	private InjectionPointConstructor<T> injectionPointCtor;
 	private final List<IInjectionPoint> injectionPointList;
 
-	public InjectionPoints(Class<T> clsRef)
+	public InjectionPoint(Class<T> clsRef)
 	{
 		injectionPointList = new ArrayList<IInjectionPoint>();
 		
@@ -95,46 +124,36 @@ public class InjectionPoints<T> implements IInjectionPoint
 		);
 	}
 	
-	public T newInstance(IInjector injector)
+	private T newInstance(IInjector injector)
 	{
 		T obj = injectionPointCtor.newInstance(injector);
 		injectInto(obj, injector);
 		return obj;
 	}
 
-	/**
-	 * 1.注入属性
-	 * 2.注入有参数的方法
-	 * 3.注入无参数的方法
-	 */
-	@Override
-	public void injectInto(Object target, IInjector injector)
+	private void injectInto(Object target, IInjector injector)
 	{
 		for(IInjectionPoint injectionPoint: injectionPointList){
 			injectionPoint.injectInto(target, injector);
 		}
 	}
 
-	@Override
-	public void getTypesNeedInject(List<Class<?>> result)
+	private List<Class<?>> getTypesNeedInject()
 	{
+		List<Class<?>> result = new ArrayList<Class<?>>();
 		if(injectionPointCtor != null){
 			injectionPointCtor.getTypesNeedInject(result);
 		}
 		for(IInjectionPoint injectionPoint: injectionPointList){
 			injectionPoint.getTypesNeedInject(result);
 		}
+		return result;
 	}
 	
 	static private Comparator<Method> methodSorter = new Comparator<Method>(){
 		@Override
 		public int compare(Method left, Method right){
-			boolean leftHasArgs = left.getParameterTypes().length > 0;
-			boolean rightHasArgs = right.getParameterTypes().length > 0;
-			if(leftHasArgs == rightHasArgs){
-				return 0;
-			}
-			return rightHasArgs ? -1 : 1;
+			return right.getParameterTypes().length - left.getParameterTypes().length;
 		}
 	};
 }

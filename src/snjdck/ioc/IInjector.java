@@ -31,8 +31,6 @@ public interface IInjector
 	
 	void injectInto(Object target);
 
-	List<Class<?>> getTypesNeedInject(Class<?> clsRef);
-
 	IInjector parent();
 	void parent(IInjector value);
 }

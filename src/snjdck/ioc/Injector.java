@@ -1,11 +1,9 @@
 package snjdck.ioc;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import snjdck.ioc.ip.InjectionPoints;
+import snjdck.ioc.ip.InjectionPoint;
 import snjdck.ioc.it.IInjectionType;
 import snjdck.ioc.it.InjectionTypeClass;
 import snjdck.ioc.it.InjectionTypeSingleton;
@@ -123,21 +121,13 @@ public class Injector implements IInjector
 	@Override
 	public <T> T newInstance(Class<T> clsRef)
 	{
-		return getInjectionPoint(clsRef).newInstance(this);
+		return InjectionPoint.NewInstance(clsRef, this);
 	}
 
 	@Override
 	public void injectInto(Object target)
 	{
-		getInjectionPoint(target.getClass()).injectInto(target, this);
-	}
-
-	@Override
-	public List<Class<?>> getTypesNeedInject(Class<?> clsRef)
-	{
-		List<Class<?>> result = new ArrayList<Class<?>>();
-		getInjectionPoint(clsRef).getTypesNeedInject(result);
-		return result;
+		InjectionPoint.InjectInto(target, this);
 	}
 
 	@Override
@@ -173,16 +163,4 @@ public class Injector implements IInjector
 		}
 		return key + "@" + id;
 	}
-	
-	@SuppressWarnings("unchecked")
-	static private <T> InjectionPoints<T> getInjectionPoint(Class<T> clsRef)
-	{
-		String clsName = clsRef.getName();
-		if(clsInfoDict.containsKey(clsName) == false){
-			clsInfoDict.put(clsName, new InjectionPoints<T>(clsRef));
-		}
-		return (InjectionPoints<T>)clsInfoDict.get(clsName);
-	}
-	
-	static private final Map<String, InjectionPoints<?>> clsInfoDict = new HashMap<String, InjectionPoints<?>>();
 }
