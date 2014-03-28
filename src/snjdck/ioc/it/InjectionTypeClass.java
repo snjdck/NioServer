@@ -12,11 +12,8 @@ public class InjectionTypeClass<T> implements IInjectionType<T>
 	}
 
 	@Override
-	public T getValue(IInjector injector, String id)
+	public T getValue(IInjector injector)
 	{
-		if(null != id){
-			return null;
-		}
 		return injector.newInstance(cls);
 	}
 }

@@ -23,13 +23,7 @@ class InjectionPointMethod extends InjectionPoint implements IInjectionPoint
 	}
 
 	@Override
-	public int getPriority()
-	{
-		return argTypes.length > 0 ? 2 : 3;
-	}
-
-	@Override
-	public void getTypesNeedToBeInjected(List<Class<?>> result)
+	public void getTypesNeedInject(List<Class<?>> result)
 	{
 		for(Class<?> argType : argTypes){
 			result.add(argType);

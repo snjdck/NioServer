@@ -27,13 +27,7 @@ class InjectionPointProperty extends InjectionPoint implements IInjectionPoint
 	}
 
 	@Override
-	public int getPriority()
-	{
-		return 1;
-	}
-
-	@Override
-	public void getTypesNeedToBeInjected(List<Class<?>> result)
+	public void getTypesNeedInject(List<Class<?>> result)
 	{
 		result.add(argType);
 	}

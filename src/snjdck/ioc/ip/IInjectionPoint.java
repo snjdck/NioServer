@@ -7,6 +7,5 @@ import snjdck.ioc.IInjector;
 interface IInjectionPoint
 {
 	void injectInto(Object target, IInjector injector);
-	int getPriority();
-	void getTypesNeedToBeInjected(List<Class<?>> result);
+	void getTypesNeedInject(List<Class<?>> result);
 }

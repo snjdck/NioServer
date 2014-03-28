@@ -12,13 +12,11 @@ public interface IInjector
 	
 	<T> void mapClass(Class<? super T> keyCls, Class<T> valueCls, String id);
 	<T> void mapClass(Class<T> keyCls, Class<? extends T> valueCls);
-	<T >void mapClass(Class<T> keyCls);
+	<T> void mapClass(Class<T> keyCls);
 	
 	<T> void mapSingleton(Class<? super T> keyCls, Class<T> valueCls, String id);
 	<T> void mapSingleton(Class<T> keyCls, Class<? extends T> valueCls);
 	<T> void mapSingleton(Class<T> keyCls);
-	
-	<T> void mapRule(Class<T> keyCls, IInjectionType<? extends T> rule);
 
 	void unmap(Class<?> keyCls, String id);
 	void unmap(Class<?> keyCls);
@@ -33,7 +31,7 @@ public interface IInjector
 	
 	void injectInto(Object target);
 
-	List<Class<?>> getTypesNeedToBeInjected(Class<?> clsRef);
+	List<Class<?>> getTypesNeedInject(Class<?> clsRef);
 
 	IInjector parent();
 	void parent(IInjector value);

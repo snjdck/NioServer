@@ -13,11 +13,8 @@ public class InjectionTypeSingleton<T> implements IInjectionType<T>
 	}
 	
 	@Override
-	public T getValue(IInjector injector, String id)
+	public T getValue(IInjector injector)
 	{
-		if(null != id){
-			return null;
-		}
 		if(null == val){
 			val = injector.newInstance(cls);
 		}

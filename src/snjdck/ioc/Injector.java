@@ -76,12 +76,6 @@ public class Injector implements IInjector
 	}
 	
 	@Override
-	public <T> void mapRule(Class<T> keyCls, IInjectionType<? extends T> rule)
-	{
-		dict.put(getKey(keyCls, null), rule);
-	}
-	
-	@Override
 	public void unmap(Class<?> keyCls, String id)
 	{
 		dict.remove(getKey(keyCls, id));
@@ -104,16 +98,10 @@ public class Injector implements IInjector
 	public <T> T getInstance(Class<T> clsRef, String id)
 	{
 		IInjectionType<T> injectionType = getInjectionType(clsRef, id);
-		
 		if(injectionType != null){
-			return injectionType.getValue(this, null);
-		}else if(id != null){
-			injectionType = getInjectionType(clsRef, null);
+			return injectionType.getValue(this);
 		}
-		if(null == injectionType){
-			return null;
-		}
-		return injectionType.getValue(this, id);
+		return null;
 	}
 
 	@Override
@@ -145,10 +133,10 @@ public class Injector implements IInjector
 	}
 
 	@Override
-	public List<Class<?>> getTypesNeedToBeInjected(Class<?> clsRef)
+	public List<Class<?>> getTypesNeedInject(Class<?> clsRef)
 	{
 		List<Class<?>> result = new ArrayList<Class<?>>();
-		getInjectionPoint(clsRef).getTypesNeedToBeInjected(result);
+		getInjectionPoint(clsRef).getTypesNeedInject(result);
 		return result;
 	}
 

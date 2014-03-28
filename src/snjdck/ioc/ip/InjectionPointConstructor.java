@@ -21,7 +21,7 @@ class InjectionPointConstructor<T>
 		return Lambda.Apply(ctor, injector.getInstance(argTypes));
 	}
 
-	public void getTypesNeedToBeInjected(List<Class<?>> result)
+	public void getTypesNeedInject(List<Class<?>> result)
 	{
 		for(Class<?> argType : argTypes){
 			result.add(argType);

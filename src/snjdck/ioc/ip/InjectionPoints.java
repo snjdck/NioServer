@@ -15,7 +15,6 @@ public class InjectionPoints<T> implements IInjectionPoint
 {
 	private InjectionPointConstructor<T> injectionPointCtor;
 	private final List<IInjectionPoint> injectionPointList;
-	private boolean hasSort;
 
 	public InjectionPoints(Class<T> clsRef)
 	{
@@ -28,12 +27,7 @@ public class InjectionPoints<T> implements IInjectionPoint
 				System.out.println("bingo prop");
 			}
 		}
-		for(Method method : clsRef.getMethods()){
-			if(method.isAnnotationPresent(Inject.class)){
-				addInjectionPointMethod(method);
-				System.out.println("bingo method");
-			}
-		}
+		initMethod(clsRef);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -55,6 +49,21 @@ public class InjectionPoints<T> implements IInjectionPoint
 		for(Constructor<?> ctor : ctorList){
 			addInjectionPointConstructor((Constructor<T>)ctor);
 			break;
+		}
+	}
+	
+	private void initMethod(Class<T> clsRef)
+	{
+		List<Method> methodList = new ArrayList<Method>();
+		for(Method method : clsRef.getMethods()){
+			if(method.isAnnotationPresent(Inject.class)){
+				methodList.add(method);
+			}
+		}
+		Collections.sort(methodList, methodSorter);
+		for(Method method : methodList){
+			addInjectionPointMethod(method);
+			System.out.println("bingo method");
 		}
 	}
 	
@@ -102,38 +111,31 @@ public class InjectionPoints<T> implements IInjectionPoint
 	@Override
 	public void injectInto(Object target, IInjector injector)
 	{
-		if(!hasSort){
-			Collections.sort(injectionPointList, comparator);
-			hasSort = true;
-		}
 		for(IInjectionPoint injectionPoint: injectionPointList){
 			injectionPoint.injectInto(target, injector);
 		}
 	}
 
 	@Override
-	public int getPriority()
-	{
-		return 0;
-	}
-
-	@Override
-	public void getTypesNeedToBeInjected(List<Class<?>> result)
+	public void getTypesNeedInject(List<Class<?>> result)
 	{
 		if(injectionPointCtor != null){
-			injectionPointCtor.getTypesNeedToBeInjected(result);
+			injectionPointCtor.getTypesNeedInject(result);
 		}
 		for(IInjectionPoint injectionPoint: injectionPointList){
-			injectionPoint.getTypesNeedToBeInjected(result);
+			injectionPoint.getTypesNeedInject(result);
 		}
 	}
 	
-	static private Comparator<IInjectionPoint> comparator = new Comparator<IInjectionPoint>()
-	{
+	static private Comparator<Method> methodSorter = new Comparator<Method>(){
 		@Override
-		public int compare(IInjectionPoint o1, IInjectionPoint o2)
-		{
-			return o1.getPriority() - o2.getPriority();
+		public int compare(Method left, Method right){
+			boolean leftHasArgs = left.getParameterTypes().length > 0;
+			boolean rightHasArgs = right.getParameterTypes().length > 0;
+			if(leftHasArgs == rightHasArgs){
+				return 0;
+			}
+			return rightHasArgs ? -1 : 1;
 		}
 	};
 }
