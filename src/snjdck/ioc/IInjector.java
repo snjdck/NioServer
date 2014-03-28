@@ -1,7 +1,5 @@
 package snjdck.ioc;
 
-import java.util.List;
-
 import snjdck.ioc.it.IInjectionType;
 
 public interface IInjector
@@ -23,11 +21,10 @@ public interface IInjector
 	
 	<T> IInjectionType<T> getMapping(Class<T> clsRef, String id);
 
+	<T> T newInstance(Class<T> clsRef);
 	<T> T getInstance(Class<T> clsRef, String id);
 	<T> T getInstance(Class<T> clsRef);
 	Object[] getInstance(Class<?>[] argTypes);
-	
-	<T> T newInstance(Class<T> clsRef);
 	
 	void injectInto(Object target);
 
