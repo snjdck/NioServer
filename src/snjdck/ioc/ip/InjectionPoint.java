@@ -45,7 +45,7 @@ final public class InjectionPoint<T>
 	private InjectionPointConstructor<T> injectionPointCtor;
 	private final List<IInjectionPoint> injectionPointList;
 
-	public InjectionPoint(Class<T> clsRef)
+	private InjectionPoint(Class<T> clsRef)
 	{
 		injectionPointList = new ArrayList<IInjectionPoint>();
 		
