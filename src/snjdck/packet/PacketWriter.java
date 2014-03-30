@@ -1,32 +1,29 @@
 package snjdck.packet;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.LinkedList;
 
 import snjdck.core.IPacket;
 import snjdck.core.IoSession;
 
-final public class PacketWriter
+final public class PacketWriter extends PacketIO
 {
-	private final ByteBuffer buffer;
-	private final LinkedList<IPacket> sendQueue;
 	private final IoSession session;
+//	private boolean isSending;
 
 	public PacketWriter(IoSession session, int bufferSize)
 	{
+		super(bufferSize);
+//		isSending = false;
 		this.session = session;
-		buffer = ByteBuffer.allocate(bufferSize);
-		sendQueue = new LinkedList<IPacket>();
 	}
-	
-	public void send(IPacket packet)
-	{
-		if(sendQueue.isEmpty()){
-			session.interestWriteOp();
-		}
-		sendQueue.add(packet);
-	}
+//	
+//	public void send(IPacket packet)
+//	{
+//		addPacket(packet);
+//		if(false == isSending){
+//			
+//		}
+//	}
 
 	public void onSend() throws IOException
 	{
@@ -43,7 +40,7 @@ final public class PacketWriter
 			buffer.compact();
 		}else{
 			buffer.clear();
-			if(sendQueue.isEmpty()){
+			if(hasPacket() == false){
 				session.interestReadOp();
 			}
 		}
@@ -51,11 +48,11 @@ final public class PacketWriter
 	
 	private void writePacketsToBuffer()
 	{
-		while(sendQueue.size() > 0)
+		while(hasPacket())
 		{
-			IPacket packet = sendQueue.getFirst();
+			IPacket packet = getPacket();
 			if(packet.write(buffer)){
-				sendQueue.removeFirst();
+				shiftPacket();
 			}else{
 				break;
 			}

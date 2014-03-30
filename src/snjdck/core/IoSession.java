@@ -16,5 +16,4 @@ public interface IoSession
 	void interestReadOp();
 	
 	int doWrite(ByteBuffer src) throws IOException;
-	int doRead(ByteBuffer dst) throws IOException;
 }

@@ -35,7 +35,7 @@ public class Client implements IClient, IoSession
 		this.packetDispatcher = packetDispatcher;
 		this.selectionKey = selectionKey;
 		
-		packetReader = new PacketReader(this, 0x20000, new Packet());
+		packetReader = new PacketReader(0x20000, new Packet());
 		packetWriter = new PacketWriter(this, 0x10000);
 	}
 	
@@ -97,7 +97,12 @@ public class Client implements IClient, IoSession
 	{
 		logger.info("nio ready recv");
 		try {
-			packetReader.onRecv();
+			int nBytesRead = getChannel().read(packetReader.getByteBuffer());
+			if(nBytesRead < 0){
+				onLogout();
+				return;
+			}
+			packetReader.onRecv(nBytesRead);
 		} catch (IOException e) {
 			onLogout();
 			e.printStackTrace();
@@ -122,7 +127,10 @@ public class Client implements IClient, IoSession
 	
 	public void send(int msgId, byte[] msg)
 	{
-		packetWriter.send(Packet.Create(msgId, msg));
+		if(packetWriter.hasPacket() == false){
+			interestWriteOp();
+		}
+		packetWriter.addPacket(Packet.Create(msgId, msg));
 	}
 	
 	public void interestReadOp()
@@ -140,10 +148,10 @@ public class Client implements IClient, IoSession
 		return (SocketChannel)selectionKey.channel();
 	}
 	
-	public int doRead(ByteBuffer dst) throws IOException
-	{
-		return getChannel().read(dst);
-	}
+//	public int doRead(ByteBuffer dst) throws IOException
+//	{
+//		return getChannel().read(dst);
+//	}
 	
 	public int doWrite(ByteBuffer src) throws IOException
 	{
