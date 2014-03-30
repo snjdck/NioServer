@@ -1,24 +1,36 @@
 package snjdck.ioc.ip;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 import snjdck.ioc.IInjector;
-import snjdck.util.Lambda;
 
 class InjectionPointConstructor<T>
 {
-	private Class<T> ctor;
+	private Constructor<T> constructor;
 	private Class<?>[] argTypes;
 	
-	public InjectionPointConstructor(Class<T> ctor, Class<?>[] argTypes)
+	public InjectionPointConstructor(Constructor<T> constructor)
 	{
-		this.ctor = ctor;
-		this.argTypes = argTypes;
+		this.constructor = constructor;
+		this.argTypes = constructor.getParameterTypes();
 	}
 	
 	public T newInstance(IInjector injector)
 	{
-		return Lambda.Apply(ctor, injector.getInstance(argTypes));
+		try{
+			return constructor.newInstance(injector.getInstance(argTypes));
+		}catch(IllegalArgumentException e){
+			e.printStackTrace();
+		}catch(InstantiationException e){
+			e.printStackTrace();
+		}catch(IllegalAccessException e){
+			e.printStackTrace();
+		}catch(InvocationTargetException e){
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	public void getTypesNeedInject(List<Class<?>> result)

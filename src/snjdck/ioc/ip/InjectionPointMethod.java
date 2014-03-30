@@ -1,25 +1,34 @@
 package snjdck.ioc.ip;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
 
 import snjdck.ioc.IInjector;
-import snjdck.util.Lambda;
 
 class InjectionPointMethod implements IInjectionPoint
 {
-	private String methodName;
+	private Method method;
 	private Class<?>[] argTypes;
 	
-	public InjectionPointMethod(String methodName, Class<?>[] argTypes)
+	public InjectionPointMethod(Method method)
 	{
-		this.methodName = methodName;
-		this.argTypes = argTypes;
+		this.method = method;
+		this.argTypes = method.getParameterTypes();
 	}
 
 	@Override
 	public void injectInto(Object target, IInjector injector)
 	{
-		Lambda.Call(target, methodName, injector.getInstance(argTypes));
+		try{
+			method.invoke(target, injector.getInstance(argTypes));
+		}catch(IllegalArgumentException e){
+			e.printStackTrace();
+		}catch(IllegalAccessException e){
+			e.printStackTrace();
+		}catch(InvocationTargetException e){
+			e.printStackTrace();
+		}
 	}
 
 	@Override

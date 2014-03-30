@@ -52,7 +52,7 @@ final public class InjectionPoint<T>
 		initCtor(clsRef);
 		for(Field field : clsRef.getFields()){
 			if(field.isAnnotationPresent(Inject.class)){
-				addInjectionPointProperty(field);
+				injectionPointList.add(new InjectionPointField(field));
 				System.out.println("bingo prop");
 			}
 		}
@@ -91,7 +91,7 @@ final public class InjectionPoint<T>
 		}
 		Collections.sort(methodList, methodSorter);
 		for(Method method : methodList){
-			addInjectionPointMethod(method);
+			injectionPointList.add(new InjectionPointMethod(method));
 			System.out.println("bingo method");
 		}
 	}
@@ -99,29 +99,8 @@ final public class InjectionPoint<T>
 	private void addInjectionPointConstructor(Constructor<T> ctor)
 	{
 		assert null == injectionPointCtor : "multi constructor inject error!";
-		injectionPointCtor = new InjectionPointConstructor<T>(ctor.getDeclaringClass(), ctor.getParameterTypes());
+		injectionPointCtor = new InjectionPointConstructor<T>(ctor);
 		System.out.println("bingo ctor");
-	}
-	
-	private void addInjectionPointMethod(Method method)
-	{
-		injectionPointList.add(
-			new InjectionPointMethod(
-				method.getName(),
-				method.getParameterTypes()
-			)
-		);
-	}
-	
-	private void addInjectionPointProperty(Field field)
-	{
-		injectionPointList.add(
-			new InjectionPointProperty(
-				field.getName(),
-				field.getAnnotation(Inject.class),
-				field.getType()
-			)
-		);
 	}
 	
 	private T newInstance(IInjector injector)
