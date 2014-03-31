@@ -16,4 +16,6 @@ public interface IoSession
 	
 	int doRead(ByteBuffer dst);
 	int doWrite(ByteBuffer src);
+	
+	void handlePacket(IPacket packet);
 }

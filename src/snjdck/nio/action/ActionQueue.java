@@ -2,30 +2,29 @@ package snjdck.nio.action;
 
 import java.util.LinkedList;
 
-import snjdck.Client;
 import snjdck.nio.IPacket;
+import snjdck.nio.IoSession;
 
-public class ActionQueue
+public class ActionQueue<T extends IoSession>
 {
-	private final LinkedList<Action> list;
+	private final LinkedList<Action<T>> list;
 	
 	public ActionQueue()
 	{
-		list = new LinkedList<Action>();
+		list = new LinkedList<Action<T>>();
 	}
 	
-	public void addAction(Client client, IPacket packet)
+	public void addAction(T client, IPacket packet)
 	{
-		list.add(Action.Create(client, packet));
+		list.add(new Action<T>(client, packet));
 	}
 	
 	public void handleAllActions()
 	{
 		while(list.size() > 0)
 		{
-			Action action = list.removeFirst();
+			Action<T> action = list.removeFirst();
 			action.client.handlePacket(action.packet);
-			action.destroy();
 		}
 	}
 }
