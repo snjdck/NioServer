@@ -2,13 +2,11 @@ package snjdck.nio;
 
 import java.nio.ByteBuffer;
 
-import snjdck.nio.action.ActionQueue;
-
 public interface IoSession
 {
 	void onConnected();
 	
-	void onReadyRecv(ActionQueue actionQueue);
+	void onReadyRecv();
 	void onReadySend();
 	
 	void interestWriteOp();

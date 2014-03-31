@@ -9,16 +9,13 @@ import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 
 import snjdck.nio.IoSession;
-import snjdck.nio.action.ActionQueue;
 
 abstract public class Server
 {
-	private final ActionQueue actionQueue;
 	protected Selector selector;
 	
 	public Server()
 	{
-		this.actionQueue = new ActionQueue();
 	}
 	
 	public void startup() throws IOException
@@ -46,7 +43,6 @@ abstract public class Server
 			timeElapsed = nextTimestamp - prevTimestamp;
 			prevTimestamp = nextTimestamp;
 			
-			actionQueue.handleAllActions();
 			onUpdate(timeElapsed);
 		}
 	}
@@ -72,7 +68,7 @@ abstract public class Server
 		IoSession session = (IoSession)selectionKey.attachment();
 		
 		if(selectionKey.isReadable()){
-			session.onReadyRecv(actionQueue);
+			session.onReadyRecv();
 		}
 		if(selectionKey.isValid() == false){
 			return;

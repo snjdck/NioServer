@@ -13,7 +13,6 @@ import snjdck.core.IPacketDispatcher;
 import snjdck.ioc.tag.Inject;
 import snjdck.nio.IPacket;
 import snjdck.nio.IoSession;
-import snjdck.nio.action.ActionQueue;
 import snjdck.nio.io.PacketReader;
 import snjdck.nio.io.PacketWriter;
 
@@ -93,12 +92,12 @@ public class Client implements IClient, IoSession
 	}
 	
 	@Override
-	public void onReadyRecv(ActionQueue actionQueue)
+	public void onReadyRecv()
 	{
 		logger.info("nio ready recv");
 		packetReader.onRecv();
 		while(packetReader.hasPacket()){
-			actionQueue.addAction(this, packetReader.shiftPacket());
+			handlePacket(packetReader.shiftPacket());
 		}
 	}
 	
