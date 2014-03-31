@@ -1,9 +1,8 @@
-package snjdck.core;
+package snjdck.nio;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import snjdck.server.action.ActionQueue;
+import snjdck.nio.action.ActionQueue;
 
 public interface IoSession
 {
@@ -15,5 +14,6 @@ public interface IoSession
 	void interestWriteOp();
 	void interestReadOp();
 	
-	int doWrite(ByteBuffer src) throws IOException;
+	int doRead(ByteBuffer dst);
+	int doWrite(ByteBuffer src);
 }

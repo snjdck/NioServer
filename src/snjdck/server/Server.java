@@ -8,8 +8,8 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 
-import snjdck.core.IoSession;
-import snjdck.server.action.ActionQueue;
+import snjdck.nio.IoSession;
+import snjdck.nio.action.ActionQueue;
 
 abstract public class Server
 {

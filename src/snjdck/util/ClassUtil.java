@@ -13,7 +13,7 @@ final public class ClassUtil
 		return (Class<T>) typeArgs[index];
 	}
 	
-	static public Object newInstance(Class<?> classRef)
+	static public <T> T newInstance(Class<T> classRef)
 	{
 		try{
 			return classRef.newInstance();

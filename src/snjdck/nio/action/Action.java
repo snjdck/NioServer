@@ -1,7 +1,7 @@
-package snjdck.server.action;
+package snjdck.nio.action;
 
 import snjdck.Client;
-import snjdck.core.IPacket;
+import snjdck.nio.IPacket;
 import snjdck.util.ObjectPool;
 
 public class Action

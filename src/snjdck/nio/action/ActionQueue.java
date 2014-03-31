@@ -1,9 +1,9 @@
-package snjdck.server.action;
+package snjdck.nio.action;
 
 import java.util.LinkedList;
 
 import snjdck.Client;
-import snjdck.core.IPacket;
+import snjdck.nio.IPacket;
 
 public class ActionQueue
 {

@@ -4,8 +4,8 @@ import java.util.HashMap;
 import java.util.logging.Logger;
 
 import snjdck.Client;
-import snjdck.core.IPacket;
 import snjdck.core.IPacketHandler;
+import snjdck.nio.IPacket;
 import snjdck.util.Amf3;
 
 public class DefaultPacketHandler implements IPacketHandler

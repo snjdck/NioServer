@@ -1,39 +1,35 @@
-package snjdck.packet;
+package snjdck.nio.io;
 
-import java.io.IOException;
-
-import snjdck.core.IPacket;
-import snjdck.core.IoSession;
+import snjdck.nio.IPacket;
+import snjdck.nio.IoSession;
 
 final public class PacketWriter extends PacketIO
 {
 	private final IoSession session;
-//	private boolean isSending;
 
 	public PacketWriter(IoSession session, int bufferSize)
 	{
 		super(bufferSize);
-//		isSending = false;
 		this.session = session;
 	}
-//	
-//	public void send(IPacket packet)
-//	{
-//		addPacket(packet);
-//		if(false == isSending){
-//			
-//		}
-//	}
+	
+	public void send(IPacket packet)
+	{
+		if(hasPacket() == false){
+			session.interestWriteOp();
+		}
+		addPacket(packet);
+	}
 
-	public void onSend() throws IOException
+	public void onSend()
 	{
 		writePacketsToBuffer();
 		buffer.flip();
 		
-		final int nBytesWrite = session.doWrite(buffer);
+		int nBytesWrite = session.doWrite(buffer);
 		
 		if(nBytesWrite < 0){
-			throw new IOException();
+			return;
 		}
 		
 		if(buffer.hasRemaining()){

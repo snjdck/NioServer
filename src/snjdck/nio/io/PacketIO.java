@@ -1,9 +1,9 @@
-package snjdck.packet;
+package snjdck.nio.io;
 
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 
-import snjdck.core.IPacket;
+import snjdck.nio.IPacket;
 
 abstract class PacketIO
 {
@@ -16,16 +16,6 @@ abstract class PacketIO
 		buffer = ByteBuffer.allocate(bufferSize);
 	}
 	
-	public ByteBuffer getByteBuffer()
-	{
-		return buffer;
-	}
-	
-	public void addPacket(IPacket packet)
-	{
-		packetList.add(packet);
-	}
-	
 	public IPacket shiftPacket()
 	{
 		return packetList.removeFirst();
@@ -34,6 +24,11 @@ abstract class PacketIO
 	public boolean hasPacket()
 	{
 		return packetList.size() > 0;
+	}
+	
+	protected void addPacket(IPacket packet)
+	{
+		packetList.add(packet);
 	}
 	
 	protected IPacket getPacket()

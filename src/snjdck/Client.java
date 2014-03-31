@@ -9,14 +9,13 @@ import java.util.logging.Logger;
 
 import snjdck.core.ClientState;
 import snjdck.core.IClient;
-import snjdck.core.IPacket;
 import snjdck.core.IPacketDispatcher;
-import snjdck.core.IoSession;
 import snjdck.ioc.tag.Inject;
-import snjdck.packet.Packet;
-import snjdck.packet.PacketReader;
-import snjdck.packet.PacketWriter;
-import snjdck.server.action.ActionQueue;
+import snjdck.nio.IPacket;
+import snjdck.nio.IoSession;
+import snjdck.nio.action.ActionQueue;
+import snjdck.nio.io.PacketReader;
+import snjdck.nio.io.PacketWriter;
 
 public class Client implements IClient, IoSession
 {
@@ -28,6 +27,7 @@ public class Client implements IClient, IoSession
 	
 	final private int id;
 	private final IPacketDispatcher packetDispatcher;
+	private IPacket packetFactory;
 	
 	public Client(int id, SelectionKey selectionKey, IPacketDispatcher packetDispatcher)
 	{
@@ -35,7 +35,7 @@ public class Client implements IClient, IoSession
 		this.packetDispatcher = packetDispatcher;
 		this.selectionKey = selectionKey;
 		
-		packetReader = new PacketReader(0x20000, new Packet());
+		packetReader = new PacketReader(this, 0x20000, null);
 		packetWriter = new PacketWriter(this, 0x10000);
 	}
 	
@@ -96,18 +96,7 @@ public class Client implements IClient, IoSession
 	public void onReadyRecv(ActionQueue actionQueue)
 	{
 		logger.info("nio ready recv");
-		try {
-			int nBytesRead = getChannel().read(packetReader.getByteBuffer());
-			if(nBytesRead < 0){
-				onLogout();
-				return;
-			}
-			packetReader.onRecv(nBytesRead);
-		} catch (IOException e) {
-			onLogout();
-			e.printStackTrace();
-			return;
-		}
+		packetReader.onRecv();
 		while(packetReader.hasPacket()){
 			actionQueue.addAction(this, packetReader.shiftPacket());
 		}
@@ -117,20 +106,12 @@ public class Client implements IClient, IoSession
 	public void onReadySend()
 	{
 		logger.info("nio ready send");
-		try {
-			packetWriter.onSend();
-		} catch (IOException e) {
-			onLogout();
-			e.printStackTrace();
-		}
+		packetWriter.onSend();
 	}
 	
 	public void send(int msgId, byte[] msg)
 	{
-		if(packetWriter.hasPacket() == false){
-			interestWriteOp();
-		}
-		packetWriter.addPacket(Packet.Create(msgId, msg));
+		packetWriter.send(packetFactory.create(msgId, msg));
 	}
 	
 	public void interestReadOp()
@@ -148,16 +129,28 @@ public class Client implements IClient, IoSession
 		return (SocketChannel)selectionKey.channel();
 	}
 	
-//	public int doRead(ByteBuffer dst) throws IOException
-//	{
-//		return getChannel().read(dst);
-//	}
-	
-	public int doWrite(ByteBuffer src) throws IOException
+	public int doRead(ByteBuffer dst)
 	{
-		return getChannel().write(src);
+		try{
+			return getChannel().read(dst);
+		}catch(IOException e){
+			e.printStackTrace();
+			onLogout();
+		}
+		return 0;
 	}
 	
+	public int doWrite(ByteBuffer src)
+	{
+		try{
+			return getChannel().write(src);
+		}catch(IOException e){
+			e.printStackTrace();
+			onLogout();
+		}
+		return 0;
+	}
+
 	private ClientState state = ClientState.CONNECTED;
 	
 	private final SelectionKey selectionKey;

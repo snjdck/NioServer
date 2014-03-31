@@ -2,8 +2,7 @@ package snjdck.util;
 
 import java.util.LinkedList;
 
-@SuppressWarnings("unchecked")
-public class ObjectPool<T>
+final public class ObjectPool<T>
 {
 	private LinkedList<T> cache;
 	private Class<T> classType;
@@ -19,7 +18,7 @@ public class ObjectPool<T>
 		T result = null;
 		
 		if(cache.isEmpty()){
-			result = (T) ClassUtil.newInstance(classType);
+			result = ClassUtil.newInstance(classType);
 		}else{
 			result = cache.removeLast();
 		}

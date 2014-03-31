@@ -8,7 +8,7 @@ import java.util.logging.Logger;
 import snjdck.Client;
 import snjdck.PacketDispatcherFactory;
 import snjdck.core.IPacketDispatcher;
-import snjdck.core.IoSession;
+import snjdck.nio.IoSession;
 import snjdck.util.SocketFactory;
 
 public class LogicServer extends Server

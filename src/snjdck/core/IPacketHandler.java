@@ -1,6 +1,7 @@
 package snjdck.core;
 
 import snjdck.Client;
+import snjdck.nio.IPacket;
 
 public interface IPacketHandler
 {

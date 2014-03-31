@@ -1,4 +1,4 @@
-package snjdck.core;
+package snjdck.nio;
 
 import java.nio.ByteBuffer;
 
@@ -11,4 +11,5 @@ public interface IPacket
 	byte[] getBody();
 	
 	IPacket create();
+	IPacket create(int msgId, byte[] body);
 }

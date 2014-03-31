@@ -2,8 +2,8 @@ package snjdck;
 
 import snjdck.core.ClientState;
 import snjdck.core.IClient;
-import snjdck.core.IPacket;
 import snjdck.core.IPacketFilter;
+import snjdck.nio.IPacket;
 
 public class PacketFilter implements IPacketFilter
 {

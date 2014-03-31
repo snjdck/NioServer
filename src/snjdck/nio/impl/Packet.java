@@ -1,10 +1,10 @@
-package snjdck.packet;
+package snjdck.nio.impl;
 
 import java.nio.ByteBuffer;
 
-import snjdck.core.IPacket;
+import snjdck.nio.IPacket;
 
-final public class Packet implements IPacket
+final class Packet implements IPacket
 {
 	static public Packet Create(int msgId, byte[] msg)
 	{
@@ -31,6 +31,12 @@ final public class Packet implements IPacket
 	public IPacket create()
 	{
 		return new Packet();
+	}
+
+	@Override
+	public IPacket create(int msgId, byte[] body)
+	{
+		return null;
 	}
 
 	@Override

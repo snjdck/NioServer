@@ -3,10 +3,10 @@ package snjdck;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
-import snjdck.core.IPacket;
 import snjdck.core.IPacketDispatcher;
 import snjdck.core.IPacketFilter;
 import snjdck.core.IPacketHandler;
+import snjdck.nio.IPacket;
 
 public class PacketDispatcher implements IPacketDispatcher
 {
