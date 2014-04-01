@@ -1,54 +1,86 @@
 package snjdck.server;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
+import snjdck.Client;
 import snjdck.nio.IoSession;
 
-abstract public class Server
+final public class Server
 {
-	protected Selector selector;
-	
-	public Server()
+	static public void main(String[] args)
 	{
+		Server server = new Server(7410);
+		
+		long prevTimestamp = System.currentTimeMillis();
+		long nextTimestamp;
+		
+		while(true)
+		{
+			server.select(20);
+			
+			nextTimestamp = System.currentTimeMillis();
+			onUpdate(nextTimestamp - prevTimestamp);
+			prevTimestamp = nextTimestamp;
+		}
+	}
+	
+	static private void onUpdate(long timeElapsed)
+	{
+		
+	}
+	
+	protected Selector selector;
+	private ServerSocketChannel serverSocketChannel;
+	
+	private final List<IoSession> sessionList;
+	private final int port;
+	
+	public Server(int port)
+	{
+		sessionList = new LinkedList<IoSession>();
+		this.port = port;
 	}
 	
 	public void startup() throws IOException
 	{
 		selector = Selector.open();
+		
+		serverSocketChannel = ServerSocketChannel.open();
+		ServerSocket serverSocket = serverSocketChannel.socket();
+		serverSocket.setReuseAddress(true);
+		serverSocket.bind(new InetSocketAddress(port));
+		
+		registerToSelector(serverSocketChannel, SelectionKey.OP_ACCEPT);
 	}
 	
 	public void shutdown() throws IOException
 	{
+		serverSocketChannel.close();
 		selector.close();
 	}
 	
-	final public void runMainLoop() throws IOException
+	public void select(int timeout)
 	{
-		long prevTimestamp = System.currentTimeMillis();
-		long nextTimestamp;
-		long timeElapsed;
-		
-		while(true)
-		{
-			select();
-			update();
-			
-			nextTimestamp = System.currentTimeMillis();
-			timeElapsed = nextTimestamp - prevTimestamp;
-			prevTimestamp = nextTimestamp;
-			
-			onUpdate(timeElapsed);
+		try{
+			selectImpl(timeout);
+		}catch(IOException e){
+			e.printStackTrace();
 		}
 	}
 	
-	private void update() throws IOException
+	private void selectImpl(int timeout) throws IOException
 	{
+		selector.select(timeout);
 		Iterator<SelectionKey> it = selector.selectedKeys().iterator();
 		while(it.hasNext()){
 			SelectionKey selectionKey = it.next();
@@ -78,7 +110,7 @@ abstract public class Server
 		}
 	}
 	
-	final public void addSocketChannel(SocketChannel socketChannel) throws IOException
+	private void addSocketChannel(SocketChannel socketChannel) throws IOException
 	{
 		SelectionKey selectionKey = registerToSelector(socketChannel, SelectionKey.OP_READ);
 		IoSession session = createSession(selectionKey);
@@ -86,13 +118,16 @@ abstract public class Server
 		selectionKey.attach(session);
 	}
 	
-	final protected SelectionKey registerToSelector(SelectableChannel channel, int ops) throws IOException
+	private SelectionKey registerToSelector(SelectableChannel channel, int ops) throws IOException
 	{
 		channel.configureBlocking(false);
 		return channel.register(selector, ops);
 	}
 	
-	abstract protected void select() throws IOException;
-	abstract protected IoSession createSession(SelectionKey selectionKey);
-	abstract protected void onUpdate(long timeElapsed);
+	private IoSession createSession(SelectionKey selectionKey)
+	{
+		Client client = new Client(0, selectionKey, null);
+		sessionList.add(client);
+		return client;
+	}
 }
