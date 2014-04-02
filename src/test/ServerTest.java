@@ -9,7 +9,7 @@ public class ServerTest
 	{
 		EntityEngine engine = new EntityEngine();
 		
-		engine.addSystem(new Server(7410, 20), 0);
+		engine.addSystem(new Server(7410, 20));
 		
 		engine.run();
 	}

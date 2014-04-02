@@ -7,32 +7,23 @@ import snjdck.ioc.IInjector;
 
 public class EntityEngine
 {
-	private final List<Integer> priorityList;
 	private final List<ISystem> systemList;
 	
 	private IInjector injector;
 	
 	public EntityEngine()
 	{
-		priorityList = new LinkedList<Integer>();
 		systemList = new LinkedList<ISystem>();
 	}
 	
-	public void addSystem(ISystem system, int priority)
+	public void addSystem(ISystem system)
 	{
-		int index = getIndex(priority);
-		priorityList.add(index, priority);
-		systemList.add(index, system);
+		systemList.add(system);
 	}
 	
 	public void removeSystem(ISystem system)
 	{
-		if(systemList.contains(system) == false){
-			return;
-		}
-		int index = systemList.indexOf(system);
-		systemList.remove(index);
-		priorityList.remove(index);
+		systemList.remove(system);
 	}
 	
 	public void update(long timeElapsed)
@@ -56,15 +47,5 @@ public class EntityEngine
 			timeElapsed = nextTimestamp - prevTimestamp;
 			prevTimestamp = nextTimestamp;
 		}
-	}
-	
-	private int getIndex(int priority)
-	{
-		for(int index=priorityList.size()-1; index >= 0; --index){
-			if(priorityList.get(index) <= priority){
-				return index + 1;
-			}
-		}
-		return 0;
 	}
 }
