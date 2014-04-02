@@ -14,40 +14,22 @@ import java.util.List;
 
 import snjdck.Client;
 import snjdck.nio.IoSession;
+import entityengine.ISystem;
 
-final public class Server
+final public class Server implements ISystem
 {
-	static public void main(String[] args)
-	{
-		Server server = new Server(7410);
-		
-		long prevTimestamp = System.currentTimeMillis();
-		long nextTimestamp;
-		
-		while(true)
-		{
-			server.select(20);
-			
-			nextTimestamp = System.currentTimeMillis();
-			onUpdate(nextTimestamp - prevTimestamp);
-			prevTimestamp = nextTimestamp;
-		}
-	}
-	
-	static private void onUpdate(long timeElapsed)
-	{
-		
-	}
-	
 	protected Selector selector;
 	private ServerSocketChannel serverSocketChannel;
 	
 	private final List<IoSession> sessionList;
-	private final int port;
 	
-	public Server(int port)
+	private final int port;
+	private final int selectTimeout;
+	
+	public Server(int port, int selectTimeout)
 	{
 		sessionList = new LinkedList<IoSession>();
+		this.selectTimeout = selectTimeout;
 		this.port = port;
 	}
 	
@@ -69,15 +51,16 @@ final public class Server
 		selector.close();
 	}
 	
-	public void select(int timeout)
+	@Override
+	public void update(long timeElapsed)
 	{
 		try{
-			selectImpl(timeout);
+			selectImpl(selectTimeout);
 		}catch(IOException e){
 			e.printStackTrace();
 		}
 	}
-	
+
 	private void selectImpl(int timeout) throws IOException
 	{
 		selector.select(timeout);
