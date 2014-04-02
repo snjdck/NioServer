@@ -11,13 +11,15 @@ public class EntityEngine
 	
 	private IInjector injector;
 	
-	public EntityEngine()
+	public EntityEngine(IInjector injector)
 	{
 		systemList = new LinkedList<ISystem>();
+		this.injector = injector;
 	}
 	
 	public void addSystem(ISystem system)
 	{
+		injector.injectInto(system);
 		systemList.add(system);
 	}
 	

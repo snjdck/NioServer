@@ -19,9 +19,9 @@ import snjdck.util.ClassUtil;
 
 public class PacketDispatcherFactory
 {
-	static public IPacketDispatcher newPacketDispatcher()
+	static public PacketDispatcher newPacketDispatcher()
 	{
-		IPacketDispatcher packetDispatcher = new PacketDispatcher(new PacketFilter());
+		PacketDispatcher packetDispatcher = new PacketDispatcher(new PacketFilter());
 		
 		try{
 			config(packetDispatcher);

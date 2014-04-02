@@ -4,9 +4,9 @@ import snjdck.ioc.it.IInjectionType;
 
 public interface IInjector
 {
-	<T> void mapValue(Class<? super T> keyCls, T value, String id, Boolean needInject);
-	<T> void mapValue(Class<? super T> keyCls, T value, String id);
-	<T> void mapValue(Class<? super T> keyCls, T value);
+	<T> void mapValue(Class<T> keyCls, T value, String id, Boolean needInject);
+	<T> void mapValue(Class<T> keyCls, T value, String id);
+	<T> void mapValue(Class<T> keyCls, T value);
 	
 	<T> void mapClass(Class<? super T> keyCls, Class<T> valueCls, String id);
 	<T> void mapClass(Class<T> keyCls, Class<? extends T> valueCls);

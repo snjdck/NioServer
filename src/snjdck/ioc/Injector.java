@@ -18,21 +18,27 @@ public class Injector implements IInjector
 	{
 		dict = new HashMap<String, IInjectionType<?>>();
 	}
+	
+	public Injector(IInjector parent)
+	{
+		this();
+		this.parent = parent;
+	}
 
 	@Override
-	public <T> void mapValue(Class<? super T> keyCls, T value, String id, Boolean needInject)
+	public <T> void mapValue(Class<T> keyCls, T value, String id, Boolean needInject)
 	{
 		dict.put(getKey(keyCls, id), new InjectionTypeValue<T>(value, needInject));
 	}
 
 	@Override
-	public <T> void mapValue(Class<? super T> keyCls, T value, String id)
+	public <T> void mapValue(Class<T> keyCls, T value, String id)
 	{
 		mapValue(keyCls, value, id, true);
 	}
 
 	@Override
-	public <T> void mapValue(Class<? super T> keyCls, T value)
+	public <T> void mapValue(Class<T> keyCls, T value)
 	{
 		mapValue(keyCls, value, null);
 	}

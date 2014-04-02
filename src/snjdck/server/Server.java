@@ -31,6 +31,12 @@ final public class Server implements ISystem
 		sessionList = new LinkedList<IoSession>();
 		this.selectTimeout = selectTimeout;
 		this.port = port;
+		
+		try{
+			startup();
+		}catch(IOException e){
+			e.printStackTrace();
+		}
 	}
 	
 	public void startup() throws IOException
