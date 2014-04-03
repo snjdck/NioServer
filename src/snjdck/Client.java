@@ -137,24 +137,32 @@ public class Client implements IClient, IoSession
 	
 	public int doRead(ByteBuffer dst)
 	{
+		int bytesRead = 0;
 		try{
-			return getChannel().read(dst);
+			bytesRead = getChannel().read(dst);
 		}catch(IOException e){
 			e.printStackTrace();
 			onLogout();
 		}
-		return 0;
+		if(bytesRead < 0){
+			onLogout();
+		}
+		return bytesRead;
 	}
 	
 	public int doWrite(ByteBuffer src)
 	{
+		int bytesWrite = 0;
 		try{
-			return getChannel().write(src);
+			bytesWrite = getChannel().write(src);
 		}catch(IOException e){
 			e.printStackTrace();
 			onLogout();
 		}
-		return 0;
+		if(bytesWrite < 0){
+			onLogout();
+		}
+		return bytesWrite;
 	}
 
 	private ClientState state = ClientState.CONNECTED;
