@@ -11,7 +11,7 @@ import snjdck.ioc.it.InjectionTypeValue;
 
 public class Injector implements IInjector
 {
-	private Map<String, IInjectionType<?>> dict;
+	private final Map<String, IInjectionType<?>> dict;
 	private IInjector parent;
 	
 	public Injector()
