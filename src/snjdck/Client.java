@@ -13,6 +13,7 @@ import snjdck.core.IPacketDispatcher;
 import snjdck.ioc.tag.Inject;
 import snjdck.nio.IPacket;
 import snjdck.nio.IoSession;
+import snjdck.nio.impl.Packet;
 import snjdck.nio.io.PacketReader;
 import snjdck.nio.io.PacketWriter;
 
@@ -34,7 +35,8 @@ public class Client implements IClient, IoSession
 		this.packetDispatcher = packetDispatcher;
 		this.selectionKey = selectionKey;
 		
-		packetReader = new PacketReader(this, 0x20000, null);
+		packetFactory = new Packet();
+		packetReader = new PacketReader(this, 0x20000, packetFactory.create());
 		packetWriter = new PacketWriter(this, 0x10000);
 	}
 	
@@ -88,6 +90,11 @@ public class Client implements IClient, IoSession
 	public void logout()
 	{
 		selectionKey.cancel();
+		try{
+			selectionKey.channel().close();
+		}catch(IOException e){
+			e.printStackTrace();
+		}
 		clientMgr.removeClient(this);
 	}
 	

@@ -13,11 +13,22 @@ import java.util.LinkedList;
 import java.util.List;
 
 import snjdck.Client;
+import snjdck.core.IPacketDispatcher;
+import snjdck.ioc.IInjector;
+import snjdck.ioc.tag.Inject;
 import snjdck.nio.IoSession;
+import entityengine.EntityEngine;
 import entityengine.ISystem;
+import entityengine.Module;
 
-final public class Server implements ISystem
+final public class Server extends Module implements ISystem
 {
+	@Inject
+	public IInjector injector;
+	
+	@Inject
+	public IPacketDispatcher packetDispatcher;
+	
 	protected Selector selector;
 	private ServerSocketChannel serverSocketChannel;
 	
@@ -32,14 +43,20 @@ final public class Server implements ISystem
 		this.selectTimeout = selectTimeout;
 		this.port = port;
 		
+	}
+	
+	@Override
+	public void onInit(EntityEngine engine)
+	{
+		super.onInit(engine);
 		try{
 			startup();
 		}catch(IOException e){
 			e.printStackTrace();
 		}
 	}
-	
-	public void startup() throws IOException
+
+	private void startup() throws IOException
 	{
 		selector = Selector.open();
 		
@@ -51,7 +68,7 @@ final public class Server implements ISystem
 		registerToSelector(serverSocketChannel, SelectionKey.OP_ACCEPT);
 	}
 	
-	public void shutdown() throws IOException
+	private void shutdown() throws IOException
 	{
 		serverSocketChannel.close();
 		selector.close();
@@ -115,7 +132,8 @@ final public class Server implements ISystem
 	
 	private IoSession createSession(SelectionKey selectionKey)
 	{
-		Client client = new Client(0, selectionKey, null);
+		Client client = new Client(0, selectionKey, packetDispatcher);
+		injector.injectInto(client);
 		sessionList.add(client);
 		return client;
 	}

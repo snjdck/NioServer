@@ -17,10 +17,16 @@ public class EntityEngine
 		this.injector = injector;
 	}
 	
+	public IInjector getInjector()
+	{
+		return injector;
+	}
+	
 	public void addSystem(ISystem system)
 	{
 		injector.injectInto(system);
 		systemList.add(system);
+		system.onInit(this);
 	}
 	
 	public void removeSystem(ISystem system)

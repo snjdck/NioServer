@@ -3,14 +3,16 @@ package snjdck;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
+import entityengine.EntityEngine;
 import entityengine.ISystem;
+import entityengine.Module;
 
 import snjdck.core.IPacketDispatcher;
 import snjdck.core.IPacketFilter;
 import snjdck.core.IPacketHandler;
 import snjdck.nio.IPacket;
 
-public class PacketDispatcher implements IPacketDispatcher, ISystem
+public class PacketDispatcher extends Module implements IPacketDispatcher, ISystem
 {
 	static private final Logger logger = Logger.getLogger(PacketDispatcher.class.getName());
 	
@@ -48,8 +50,13 @@ public class PacketDispatcher implements IPacketDispatcher, ISystem
 	}
 
 	@Override
+	public void onInit(EntityEngine engine)
+	{
+		super.onInit(engine);
+	}
+
+	@Override
 	public void update(long timeElapsed)
 	{
-		logger.info("tick");
 	}
 }

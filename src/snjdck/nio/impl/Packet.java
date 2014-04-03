@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 
 import snjdck.nio.IPacket;
 
-final class Packet implements IPacket
+public class Packet implements IPacket
 {
 	static public Packet Create(int msgId, byte[] msg)
 	{
@@ -36,7 +36,7 @@ final class Packet implements IPacket
 	@Override
 	public IPacket create(int msgId, byte[] body)
 	{
-		return null;
+		return Create(msgId, body);
 	}
 
 	@Override
@@ -74,14 +74,14 @@ final class Packet implements IPacket
 
 	private void readHead(ByteBuffer buffer)
 	{
-		bodySize = buffer.getInt();
-		msgId = buffer.getInt();
+		bodySize = buffer.getShort();
+		msgId = buffer.getShort();
 	}
 	
 	private void writeHead(ByteBuffer buffer)
 	{
-		buffer.putInt(bodySize);
-		buffer.putInt(msgId);
+		buffer.putShort((short)bodySize);
+		buffer.putShort((short)msgId);
 	}
 
 	private void readBody(ByteBuffer buffer)

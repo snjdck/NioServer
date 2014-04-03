@@ -26,6 +26,7 @@ public class PacketFilter implements IPacketFilter
 	{
 		switch(packet.getMsgId())
 		{
+			case 0x0000://登录消息
 			case 0x0001://登录消息
 				return true;
 		}

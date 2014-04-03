@@ -1,6 +1,7 @@
 package test;
 
 import entityengine.EntityEngine;
+import snjdck.ClientManager;
 import snjdck.PacketDispatcher;
 import snjdck.PacketDispatcherFactory;
 import snjdck.core.IPacketDispatcher;
@@ -17,6 +18,8 @@ public class ServerTest
 		
 		PacketDispatcher packetDispatcher = PacketDispatcherFactory.newPacketDispatcher();
 		injector.mapValue(IPacketDispatcher.class, packetDispatcher);
+		injector.mapSingleton(ClientManager.class);
+		injector.mapValue(IInjector.class, injector);
 		
 		engine.addSystem(new Server(7410, 20));
 		engine.addSystem(packetDispatcher);
