@@ -1,4 +1,4 @@
-package snjdck.server;
+package snjdck.nio;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -13,7 +13,6 @@ import java.util.Iterator;
 import snjdck.IClientFactory;
 import snjdck.ioc.IInjector;
 import snjdck.ioc.tag.Inject;
-import snjdck.nio.IoSession;
 import entityengine.EntityEngine;
 import entityengine.Module;
 
@@ -59,7 +58,7 @@ final public class Server extends Module
 		registerToSelector(serverSocketChannel, SelectionKey.OP_ACCEPT);
 	}
 	
-	private void shutdown() throws IOException
+	public void shutdown() throws IOException
 	{
 		serverSocketChannel.close();
 		selector.close();

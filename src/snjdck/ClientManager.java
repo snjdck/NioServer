@@ -6,6 +6,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import snjdck.core.IClientManager;
+import snjdck.nio.Client;
 
 public class ClientManager implements IClientManager
 {

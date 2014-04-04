@@ -14,7 +14,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import snjdck.core.IPacketDispatcher;
-import snjdck.core.IPacketHandler;
+import snjdck.nio.IPacketHandler;
 import snjdck.util.ClassUtil;
 
 public class PacketDispatcherFactory

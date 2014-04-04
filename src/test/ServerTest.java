@@ -3,7 +3,6 @@ package test;
 import java.nio.channels.SelectionKey;
 
 import entityengine.EntityEngine;
-import snjdck.Client;
 import snjdck.ClientManager;
 import snjdck.IClientFactory;
 import snjdck.PacketDispatcher;
@@ -11,9 +10,11 @@ import snjdck.PacketDispatcherFactory;
 import snjdck.core.IPacketDispatcher;
 import snjdck.ioc.IInjector;
 import snjdck.ioc.Injector;
+import snjdck.nio.Client;
+import snjdck.nio.IPacket;
 import snjdck.nio.IoSession;
+import snjdck.nio.Server;
 import snjdck.nio.impl.Packet;
-import snjdck.server.Server;
 
 public class ServerTest
 {
@@ -31,7 +32,13 @@ public class ServerTest
 		engine.addSystem(new Server(7410, 20, new IClientFactory(){
 			@Override
 			public IoSession createClient(SelectionKey selectionKey){
-				return new Client(selectionKey, packetDispatcher, new Packet());
+				IoSession session = new Client(selectionKey, new Packet()){
+					@Override
+					public void handlePacket(IPacket packet){
+						packetDispatcher.dispatch(this, packet);
+					}
+				};
+				return session;
 			}
 		}));
 		engine.addSystem(packetDispatcher);

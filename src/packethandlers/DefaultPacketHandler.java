@@ -3,12 +3,12 @@ package packethandlers;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
-import snjdck.Client;
-import snjdck.core.IPacketHandler;
+import snjdck.nio.Client;
 import snjdck.nio.IPacket;
+import snjdck.nio.IPacketHandler;
 import snjdck.util.Amf3;
 
-public class DefaultPacketHandler implements IPacketHandler
+public class DefaultPacketHandler implements IPacketHandler<Client>
 {
 	static private final Logger logger = Logger.getLogger(DefaultPacketHandler.class.getName());
 	static private final Amf3 amf = new Amf3();

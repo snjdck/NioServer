@@ -1,10 +1,10 @@
 package snjdck.core;
 
-import snjdck.Client;
 import snjdck.nio.IPacket;
+import snjdck.nio.IPacketHandler;
 
-public interface IPacketDispatcher
+public interface IPacketDispatcher<T>
 {
-	void addHandler(int msgId, IPacketHandler handler);
-	void dispatch(Client client, IPacket packet);
+	void addHandler(int msgId, IPacketHandler<T> handler);
+	void dispatch(T client, IPacket packet);
 }

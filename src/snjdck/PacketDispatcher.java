@@ -4,12 +4,13 @@ import java.util.HashMap;
 import java.util.logging.Logger;
 
 import snjdck.core.IPacketDispatcher;
-import snjdck.core.IPacketHandler;
+import snjdck.nio.Client;
 import snjdck.nio.IPacket;
+import snjdck.nio.IPacketHandler;
 import entityengine.EntityEngine;
 import entityengine.Module;
 
-public class PacketDispatcher extends Module implements IPacketDispatcher
+public class PacketDispatcher extends Module implements IPacketDispatcher<Client>
 {
 	static private final Logger logger = Logger.getLogger(PacketDispatcher.class.getName());
 	
@@ -21,7 +22,7 @@ public class PacketDispatcher extends Module implements IPacketDispatcher
 	}
 	
 	@Override
-	public void addHandler(int msgId, IPacketHandler handler)
+	public void addHandler(int msgId, IPacketHandler<Client> handler)
 	{
 		handlerDict.put(msgId, handler);
 	}

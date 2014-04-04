@@ -1,4 +1,4 @@
-package snjdck;
+package snjdck.nio;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -6,26 +6,21 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.util.logging.Logger;
 
-import snjdck.core.IPacketDispatcher;
-import snjdck.nio.IPacket;
-import snjdck.nio.IoSession;
 import snjdck.nio.io.PacketReader;
 import snjdck.nio.io.PacketWriter;
 
-public class Client implements IoSession
+public abstract class Client implements IoSession
 {
 	private static final Logger logger = Logger.getLogger(Client.class.getName());
 	
-	private final IPacketDispatcher packetDispatcher;
 	private IPacket packetFactory;
 	
 	private final SelectionKey selectionKey;
 	private final PacketReader packetReader;
 	private final PacketWriter packetWriter;
 	
-	public Client(SelectionKey selectionKey, IPacketDispatcher packetDispatcher, IPacket packetFactory)
+	public Client(SelectionKey selectionKey, IPacket packetFactory)
 	{
-		this.packetDispatcher = packetDispatcher;
 		this.packetFactory = packetFactory;
 		this.selectionKey = selectionKey;
 		
@@ -69,7 +64,7 @@ public class Client implements IoSession
 		logger.info("nio ready recv");
 		packetReader.onRecv();
 		while(packetReader.hasPacket()){
-			packetDispatcher.dispatch(this, packetReader.shiftPacket());
+			handlePacket(packetReader.shiftPacket());
 		}
 	}
 	
@@ -123,4 +118,6 @@ public class Client implements IoSession
 	{
 		return (SocketChannel)selectionKey.channel();
 	}
+	
+	public abstract void handlePacket(IPacket packet);
 }

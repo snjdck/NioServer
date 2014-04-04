@@ -1,6 +1,6 @@
 package snjdck.core;
 
-import snjdck.Client;
+import snjdck.nio.Client;
 
 public interface IClientManager
 {
