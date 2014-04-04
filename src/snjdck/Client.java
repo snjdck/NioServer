@@ -13,7 +13,6 @@ import snjdck.core.IPacketDispatcher;
 import snjdck.ioc.tag.Inject;
 import snjdck.nio.IPacket;
 import snjdck.nio.IoSession;
-import snjdck.nio.impl.Packet;
 import snjdck.nio.io.PacketReader;
 import snjdck.nio.io.PacketWriter;
 
@@ -29,13 +28,13 @@ public class Client implements IClient, IoSession
 	private final IPacketDispatcher packetDispatcher;
 	private IPacket packetFactory;
 	
-	public Client(int id, SelectionKey selectionKey, IPacketDispatcher packetDispatcher)
+	public Client(int id, SelectionKey selectionKey, IPacketDispatcher packetDispatcher, IPacket packetFactory)
 	{
 		this.id = id;
 		this.packetDispatcher = packetDispatcher;
+		this.packetFactory = packetFactory;
 		this.selectionKey = selectionKey;
 		
-		packetFactory = new Packet();
 		packetReader = new PacketReader(this, 0x20000, packetFactory.create());
 		packetWriter = new PacketWriter(this, 0x10000);
 	}

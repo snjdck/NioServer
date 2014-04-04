@@ -6,17 +6,6 @@ import snjdck.nio.IPacket;
 
 public class Packet implements IPacket
 {
-	static public Packet Create(int msgId, byte[] msg)
-	{
-		Packet packet = new Packet();
-		
-		packet.bodySize = msg.length;
-		packet.msgId = msgId;
-		packet.body = msg;
-		
-		return packet;
-	}
-	
 	final private int headSize = 8;
 	private int bodySize;
 	
@@ -36,7 +25,13 @@ public class Packet implements IPacket
 	@Override
 	public IPacket create(int msgId, byte[] body)
 	{
-		return Create(msgId, body);
+		Packet packet = new Packet();
+		
+		packet.bodySize = body.length;
+		packet.msgId = msgId;
+		packet.body = body;
+		
+		return packet;
 	}
 
 	@Override

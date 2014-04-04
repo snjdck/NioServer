@@ -9,11 +9,8 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 
-import snjdck.Client;
-import snjdck.core.IPacketDispatcher;
+import snjdck.IClientFactory;
 import snjdck.ioc.IInjector;
 import snjdck.ioc.tag.Inject;
 import snjdck.nio.IoSession;
@@ -26,23 +23,18 @@ final public class Server extends Module implements ISystem
 	@Inject
 	public IInjector injector;
 	
-	@Inject
-	public IPacketDispatcher packetDispatcher;
-	
 	protected Selector selector;
 	private ServerSocketChannel serverSocketChannel;
 	
-	private final List<IoSession> sessionList;
-	
 	private final int port;
 	private final int selectTimeout;
+	private final IClientFactory clientFactory;
 	
-	public Server(int port, int selectTimeout)
+	public Server(int port, int selectTimeout, IClientFactory clientFactory)
 	{
-		sessionList = new LinkedList<IoSession>();
 		this.selectTimeout = selectTimeout;
 		this.port = port;
-		
+		this.clientFactory = clientFactory;
 	}
 	
 	@Override
@@ -132,9 +124,8 @@ final public class Server extends Module implements ISystem
 	
 	private IoSession createSession(SelectionKey selectionKey)
 	{
-		Client client = new Client(0, selectionKey, packetDispatcher);
-		injector.injectInto(client);
-		sessionList.add(client);
-		return client;
+		IoSession session = clientFactory.createClient(selectionKey);
+		injector.injectInto(session);
+		return session;
 	}
 }
