@@ -31,7 +31,7 @@ public class ServerTest
 		engine.addSystem(new Server(7410, 20, new IClientFactory(){
 			@Override
 			public IoSession createClient(SelectionKey selectionKey){
-				return new Client(0, selectionKey, packetDispatcher, new Packet());
+				return new Client(selectionKey, packetDispatcher, new Packet());
 			}
 		}));
 		engine.addSystem(packetDispatcher);
