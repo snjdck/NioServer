@@ -39,25 +39,6 @@ public class Client implements IClient, IoSession
 		packetReader = new PacketReader(this, 0x20000, packetFactory.create());
 		packetWriter = new PacketWriter(this, 0x10000);
 	}
-	
-	@Override
-	public void handlePacket(IPacket packet)
-	{
-		packetDispatcher.dispatch(this, packet);
-	}
-
-	@Override
-	public void onLogin()
-	{
-		logger.info("client enter!");
-	}
-
-	@Override
-	public void onLogout()
-	{
-		logout();
-		logger.info("client quit!");
-	}
 
 	public int getID()
 	{
@@ -86,7 +67,15 @@ public class Client implements IClient, IoSession
 	{
 		logger.info("client connected!");
 	}
+	
+	@Override
+	public void onDisconnected()
+	{
+		logout();
+		logger.info("client disconnected!");
+	}
 
+	@Override
 	public void logout()
 	{
 		selectionKey.cancel();
@@ -104,7 +93,7 @@ public class Client implements IClient, IoSession
 		logger.info("nio ready recv");
 		packetReader.onRecv();
 		while(packetReader.hasPacket()){
-			handlePacket(packetReader.shiftPacket());
+			packetDispatcher.dispatch(this, packetReader.shiftPacket());
 		}
 	}
 	
@@ -141,28 +130,25 @@ public class Client implements IClient, IoSession
 		try{
 			bytesRead = getChannel().read(dst);
 		}catch(IOException e){
-			e.printStackTrace();
-			onLogout();
+			//client force close socket.
+			onDisconnected();
 		}
 		if(bytesRead < 0){
-			onLogout();
+			//client close socket normally.
+			onDisconnected();
 		}
 		return bytesRead;
 	}
 	
 	public int doWrite(ByteBuffer src)
 	{
-		int bytesWrite = 0;
 		try{
-			bytesWrite = getChannel().write(src);
+			return getChannel().write(src);
 		}catch(IOException e){
 			e.printStackTrace();
-			onLogout();
+			onDisconnected();
 		}
-		if(bytesWrite < 0){
-			onLogout();
-		}
-		return bytesWrite;
+		return 0;
 	}
 
 	private ClientState state = ClientState.CONNECTED;

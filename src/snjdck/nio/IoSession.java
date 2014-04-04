@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 public interface IoSession
 {
 	void onConnected();
+	void onDisconnected();
 	
 	void onReadyRecv();
 	void onReadySend();
@@ -14,6 +15,4 @@ public interface IoSession
 	
 	int doRead(ByteBuffer dst);
 	int doWrite(ByteBuffer src);
-	
-	void handlePacket(IPacket packet);
 }

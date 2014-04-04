@@ -1,14 +1,13 @@
 package snjdck.core;
 
-import snjdck.nio.IPacket;
+//import snjdck.nio.IPacket;
 
 public interface IClient
 {
 	ClientState state();
 	void state(ClientState newState);
 	
-	void onLogin();
-	void onLogout();
+	void logout();
 	
-	void handlePacket(IPacket packet);
+//	void handlePacket(IPacket packet);
 }
