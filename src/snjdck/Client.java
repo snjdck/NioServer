@@ -4,25 +4,18 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
-import java.nio.charset.Charset;
 import java.util.logging.Logger;
 
 import snjdck.core.ClientState;
-import snjdck.core.IClient;
 import snjdck.core.IPacketDispatcher;
-import snjdck.ioc.tag.Inject;
 import snjdck.nio.IPacket;
 import snjdck.nio.IoSession;
 import snjdck.nio.io.PacketReader;
 import snjdck.nio.io.PacketWriter;
 
-public class Client implements IClient, IoSession
+public class Client implements IoSession
 {
-	@Inject
-	public ClientManager clientMgr;
-	
 	private static final Logger logger = Logger.getLogger(Client.class.getName());
-	static private final Charset charset = Charset.forName("UTF-8");
 	
 	final private int id;
 	private final IPacketDispatcher packetDispatcher;
@@ -44,21 +37,14 @@ public class Client implements IClient, IoSession
 		return id;
 	}
 	
-	@Override
 	public ClientState state()
 	{
 		return state;
 	}
 	
-	@Override
 	public void state(ClientState newState)
 	{
 		state = newState;
-	}
-
-	public void login()
-	{
-		clientMgr.addClient(this);
 	}
 	
 	@Override
@@ -70,12 +56,12 @@ public class Client implements IClient, IoSession
 	@Override
 	public void onDisconnected()
 	{
-		logout();
+		close();
 		logger.info("client disconnected!");
 	}
 
 	@Override
-	public void logout()
+	public void close()
 	{
 		selectionKey.cancel();
 		try{
@@ -83,7 +69,6 @@ public class Client implements IClient, IoSession
 		}catch(IOException e){
 			e.printStackTrace();
 		}
-		clientMgr.removeClient(this);
 	}
 	
 	@Override
@@ -103,6 +88,7 @@ public class Client implements IClient, IoSession
 		packetWriter.onSend();
 	}
 	
+	@Override
 	public void send(int msgId, byte[] msg)
 	{
 		packetWriter.send(packetFactory.create(msgId, msg));

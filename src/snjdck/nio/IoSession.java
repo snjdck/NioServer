@@ -15,4 +15,7 @@ public interface IoSession
 	
 	int doRead(ByteBuffer dst);
 	int doWrite(ByteBuffer src);
+	
+	void send(int msgId, byte[] msg);
+	void close();
 }

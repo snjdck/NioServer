@@ -3,26 +3,22 @@ package snjdck;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
+import snjdck.core.IPacketDispatcher;
+import snjdck.core.IPacketHandler;
+import snjdck.nio.IPacket;
 import entityengine.EntityEngine;
 import entityengine.ISystem;
 import entityengine.Module;
-
-import snjdck.core.IPacketDispatcher;
-import snjdck.core.IPacketFilter;
-import snjdck.core.IPacketHandler;
-import snjdck.nio.IPacket;
 
 public class PacketDispatcher extends Module implements IPacketDispatcher, ISystem
 {
 	static private final Logger logger = Logger.getLogger(PacketDispatcher.class.getName());
 	
 	private HashMap<Integer, IPacketHandler> handlerDict;
-	private IPacketFilter filter;
 	
-	public PacketDispatcher(IPacketFilter filter)
+	public PacketDispatcher()
 	{
 		this.handlerDict = new HashMap<Integer, IPacketHandler>();
-		this.filter = filter;
 	}
 	
 	@Override
@@ -34,11 +30,6 @@ public class PacketDispatcher extends Module implements IPacketDispatcher, ISyst
 	@Override
 	public void dispatch(Client client, IPacket packet)
 	{
-		if(filter.filter(client, packet) == false){
-			logger.info("packet 被过滤");
-			return;
-		}
-		
 		IPacketHandler handler = handlerDict.get(packet.getMsgId());
 		
 		if(null == handler){

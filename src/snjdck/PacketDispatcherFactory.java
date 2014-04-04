@@ -21,7 +21,7 @@ public class PacketDispatcherFactory
 {
 	static public PacketDispatcher newPacketDispatcher()
 	{
-		PacketDispatcher packetDispatcher = new PacketDispatcher(new PacketFilter());
+		PacketDispatcher packetDispatcher = new PacketDispatcher();
 		
 		try{
 			config(packetDispatcher);
