@@ -7,13 +7,13 @@ import snjdck.ioc.IInjector;
 
 public class EntityEngine
 {
-	private final List<ISystem> systemList;
+	private final List<Module> moduleList;
 	
 	private IInjector injector;
 	
 	public EntityEngine(IInjector injector)
 	{
-		systemList = new LinkedList<ISystem>();
+		moduleList = new LinkedList<Module>();
 		this.injector = injector;
 	}
 	
@@ -22,22 +22,22 @@ public class EntityEngine
 		return injector;
 	}
 	
-	public void addSystem(ISystem system)
+	public void addSystem(Module module)
 	{
-		injector.injectInto(system);
-		systemList.add(system);
-		system.onInit(this);
+		injector.injectInto(module);
+		moduleList.add(module);
+		module.onInit(this);
 	}
 	
-	public void removeSystem(ISystem system)
+	public void removeSystem(Module module)
 	{
-		systemList.remove(system);
+		moduleList.remove(module);
 	}
 	
 	public void update(long timeElapsed)
 	{
-		for(ISystem system : systemList){
-			system.update(timeElapsed);
+		for(Module module : moduleList){
+			module.update(timeElapsed);
 		}
 	}
 	

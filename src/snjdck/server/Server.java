@@ -15,10 +15,9 @@ import snjdck.ioc.IInjector;
 import snjdck.ioc.tag.Inject;
 import snjdck.nio.IoSession;
 import entityengine.EntityEngine;
-import entityengine.ISystem;
 import entityengine.Module;
 
-final public class Server extends Module implements ISystem
+final public class Server extends Module
 {
 	@Inject
 	public IInjector injector;

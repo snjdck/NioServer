@@ -7,10 +7,9 @@ import snjdck.core.IPacketDispatcher;
 import snjdck.core.IPacketHandler;
 import snjdck.nio.IPacket;
 import entityengine.EntityEngine;
-import entityengine.ISystem;
 import entityengine.Module;
 
-public class PacketDispatcher extends Module implements IPacketDispatcher, ISystem
+public class PacketDispatcher extends Module implements IPacketDispatcher
 {
 	static private final Logger logger = Logger.getLogger(PacketDispatcher.class.getName());
 	
