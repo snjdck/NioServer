@@ -24,22 +24,16 @@ final public class PacketWriter extends PacketIO
 	public void onSend()
 	{
 		writePacketsToBuffer();
+		
 		buffer.flip();
 		
-		int nBytesWrite = session.doWrite(buffer);
+		session.doWrite(buffer);
 		
-		if(nBytesWrite < 0){
-			return;
+		if(!(hasPacket() || buffer.hasRemaining())){
+			session.interestReadOp();
 		}
 		
-		if(buffer.hasRemaining()){
-			buffer.compact();
-		}else{
-			buffer.clear();
-			if(hasPacket() == false){
-				session.interestReadOp();
-			}
-		}
+		buffer.compact();
 	}
 	
 	private void writePacketsToBuffer()
