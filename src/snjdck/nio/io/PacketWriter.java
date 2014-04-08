@@ -29,11 +29,16 @@ final public class PacketWriter extends PacketIO
 		
 		session.doWrite(buffer);
 		
-		if(!(hasPacket() || buffer.hasRemaining())){
-			session.interestReadOp();
+		if(buffer.hasRemaining()){
+			buffer.compact();
+			return;
 		}
 		
-		buffer.compact();
+		buffer.clear();
+		
+		if(hasPacket() == false){
+			session.interestReadOp();
+		}
 	}
 	
 	private void writePacketsToBuffer()
