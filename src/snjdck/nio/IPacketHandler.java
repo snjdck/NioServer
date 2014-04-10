@@ -1,6 +1,8 @@
 package snjdck.nio;
 
-public interface IPacketHandler<T>
+import entityengine.Entity;
+
+public interface IPacketHandler
 {
-	void handle(T session, IPacket packet);
+	void handle(Entity client, IPacket packet);
 }

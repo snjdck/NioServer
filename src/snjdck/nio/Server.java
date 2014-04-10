@@ -10,29 +10,21 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 
-import snjdck.IClientFactory;
-import snjdck.ioc.IInjector;
-import snjdck.ioc.tag.Inject;
 import entityengine.EntityEngine;
 import entityengine.Module;
 
 final public class Server extends Module
 {
-	@Inject
-	public IInjector injector;
-	
 	protected Selector selector;
 	private ServerSocketChannel serverSocketChannel;
 	
 	private final int port;
 	private final int selectTimeout;
-	private final IClientFactory clientFactory;
 	
-	public Server(int port, int selectTimeout, IClientFactory clientFactory)
+	public Server(int port, int selectTimeout)
 	{
 		this.selectTimeout = selectTimeout;
 		this.port = port;
-		this.clientFactory = clientFactory;
 	}
 	
 	@Override
@@ -93,37 +85,21 @@ final public class Server extends Module
 			return;
 		}
 		
-		IoSession session = (IoSession)selectionKey.attachment();
-		
-		if(selectionKey.isReadable()){
-			session.onReadyRecv();
-		}
-		if(selectionKey.isValid() == false){
-			return;
-		}
-		if(selectionKey.isWritable()){
-			session.onReadySend();
-		}
+		Client client = (Client)selectionKey.attachment();
+		client.getComponent(IoSession.class).updateIO();
 	}
 	
 	private void addSocketChannel(SocketChannel socketChannel) throws IOException
 	{
 		SelectionKey selectionKey = registerToSelector(socketChannel, SelectionKey.OP_READ);
-		IoSession session = createSession(selectionKey);
-		session.onConnected();
-		selectionKey.attach(session);
+		Client client = new Client(selectionKey);
+		client.onConnected();
+		selectionKey.attach(client);
 	}
 	
 	private SelectionKey registerToSelector(SelectableChannel channel, int ops) throws IOException
 	{
 		channel.configureBlocking(false);
 		return channel.register(selector, ops);
-	}
-	
-	private IoSession createSession(SelectionKey selectionKey)
-	{
-		IoSession session = clientFactory.createClient(selectionKey);
-		injector.injectInto(session);
-		return session;
 	}
 }

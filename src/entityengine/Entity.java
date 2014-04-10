@@ -3,33 +3,39 @@ package entityengine;
 import java.util.HashMap;
 import java.util.Map;
 
+import snjdck.ioc.IInjector;
+import snjdck.ioc.Injector;
+
 public class Entity implements IComponent
 {
 	private final Map<Class<? extends IComponent>, IComponent> componentDict;
+	private final IInjector injector;
 	
 	public Entity()
 	{
 		componentDict = new HashMap<Class<? extends IComponent>, IComponent>();
+		injector = new Injector();
+		
+		injector.mapValue(Entity.class, this);
 	}
 	
-	public <T extends IComponent> void addComponent(T component, Class<T> componentType)
+	public <T extends IComponent> void addComponent(Class<T> componentType, T component)
 	{
-		if(hasComponent(componentType) == false){
-			componentDict.put(componentType, component);
+		if(hasComponent(componentType)){
+			return;
 		}
-	}
-	
-	public void addComponent(IComponent component)
-	{
-		Class<? extends IComponent> componentType = component.getClass();
-		if(hasComponent(componentType) == false){
-			componentDict.put(componentType, component);
-		}
+		componentDict.put(componentType, component);
+		injector.injectInto(component);
+		injector.mapValue(componentType, component);
 	}
 	
 	public void delComponent(Class<? extends IComponent> componentType)
 	{
+		if(hasComponent(componentType) == false){
+			return;
+		}
 		componentDict.remove(componentType);
+		injector.unmap(componentType);
 	}
 	
 	public boolean hasComponent(Class<? extends IComponent> componentType)

@@ -37,7 +37,7 @@ final public class PacketWriter extends PacketIO
 		buffer.clear();
 		
 		if(hasPacket() == false){
-			session.interestReadOp();
+			session.uninterestWriteOp();
 		}
 	}
 	
