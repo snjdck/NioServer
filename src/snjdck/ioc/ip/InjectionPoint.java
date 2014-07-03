@@ -53,7 +53,6 @@ final public class InjectionPoint<T>
 		for(Field field : clsRef.getFields()){
 			if(field.isAnnotationPresent(Inject.class)){
 				injectionPointList.add(new InjectionPointField(field));
-				System.out.println("bingo prop");
 			}
 		}
 		initMethod(clsRef);
@@ -92,7 +91,6 @@ final public class InjectionPoint<T>
 		Collections.sort(methodList, methodSorter);
 		for(Method method : methodList){
 			injectionPointList.add(new InjectionPointMethod(method));
-			System.out.println("bingo method");
 		}
 	}
 	
@@ -100,7 +98,6 @@ final public class InjectionPoint<T>
 	{
 		assert null == injectionPointCtor : "multi constructor inject error!";
 		injectionPointCtor = new InjectionPointConstructor<T>(ctor);
-		System.out.println("bingo ctor");
 	}
 	
 	private T newInstance(IInjector injector)
