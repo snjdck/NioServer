@@ -8,30 +8,21 @@ import java.util.Properties;
 
 public class IniReader
 {
-	public static void main(String[] args)
-	{
-		try {
-			IniReader reader = new IniReader("D:\\test.ini");
-			System.out.println(reader.getValue("session1", "name"));
-			System.out.println(reader.getValue("session1", "password"));
-			System.out.println(reader.getValue("session1", "sex"));
-			System.out.println(reader.getValue("session1", "age"));
-			System.out.println(reader.getValue("session1", "chinesename"));
-			System.out.println(reader.getValue("session2", "name"));
-			System.out.println(reader.getValue("session2", "password"));
-			System.out.println(reader.getValue("session2", "age"));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
+	private final HashMap<String, Properties> sessionMap;
+	private transient Properties currentProperties;
 	
-	public IniReader(String fileName) throws IOException
+	public IniReader(String fileName)
 	{
 		sessionMap = new HashMap<String, Properties>();
 		
-		BufferedReader reader = new BufferedReader(new FileReader(fileName));
-		parseFile(reader);
-		reader.close();
+		BufferedReader reader;
+		try{
+			reader = new BufferedReader(new FileReader(fileName));
+			parseFile(reader);
+			reader.close();
+		}catch(IOException e){
+			e.printStackTrace();
+		}
 	}
 	
 	private void parseFile(BufferedReader reader) throws IOException
@@ -79,8 +70,4 @@ public class IniReader
 		}
 		return properties.getProperty(key);
 	}
-
-	private final HashMap<String, Properties> sessionMap;
-	
-	private transient Properties currentProperties;
 }
