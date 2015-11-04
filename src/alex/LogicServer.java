@@ -8,13 +8,13 @@ import java.net.Socket;
 import alex.nio.io.PacketReader;
 import alex.packet.PacketQueue;
 
-
-public class LogicServer {
-
+public class LogicServer
+{
 	final PacketQueue packetList;
 	final Socket socket;
 	
-	public LogicServer() {
+	public LogicServer()
+	{
 		packetList = new PacketQueue();
 		
 		socket = new Socket();
@@ -33,7 +33,8 @@ public class LogicServer {
 		}
 	}
 	
-	void onPacketRecv(byte[] packet) {
+	void onPacketRecv(byte[] packet)
+	{
 	}
 
 	class WriteThread implements Runnable
@@ -42,19 +43,14 @@ public class LogicServer {
 		public void run()
 		{
 			try {
-				onRun();
+				OutputStream outputStream = socket.getOutputStream();
+				for(;;){
+					byte[] packet = packetList.take();
+					outputStream.write(packet);
+				}
 			}catch (IOException e) {
 				e.printStackTrace();
 			} 
-		}
-		
-		void onRun() throws IOException
-		{
-			OutputStream outputStream = socket.getOutputStream();
-			for(;;){
-				byte[] packet = packetList.take();
-				outputStream.write(packet);
-			}
 		}
 	}
 }

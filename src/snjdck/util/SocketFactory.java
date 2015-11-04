@@ -8,32 +8,30 @@ import java.nio.channels.SocketChannel;
 
 final public class SocketFactory
 {
-	static public ServerSocketChannel CreateServerSocketChannel(int port)
+	static public ServerSocket CreateServerSocket(int port) throws IOException
 	{
-		ServerSocketChannel channel = null;
-		try{
-			channel = ServerSocketChannel.open();
-			ServerSocket socket = channel.socket();
-			socket.setReuseAddress(true);
-			socket.bind(new InetSocketAddress(port));
-		}catch(IOException e){
-			e.printStackTrace();
-			return null;
-		}
-		
+		ServerSocket socket = new ServerSocket();
+		InitServerSocket(socket, port);
+		return socket;
+	}
+	
+	static public ServerSocketChannel CreateServerSocketChannel(int port) throws IOException
+	{
+		ServerSocketChannel channel = ServerSocketChannel.open();
+		InitServerSocket(channel.socket(), port);
 		return channel;
 	}
 	
-	static public SocketChannel CreateSocketChannel(String host, int port)
+	static public SocketChannel CreateSocketChannel(String host, int port) throws IOException
 	{
-		SocketChannel channel = null;
-		try{
-			channel = SocketChannel.open();
-			channel.connect(new InetSocketAddress(host, port));
-		}catch(IOException e){
-			e.printStackTrace();
-			return null;
-		}
+		SocketChannel channel = SocketChannel.open();
+		channel.connect(new InetSocketAddress(host, port));
 		return channel;
+	}
+	
+	static private void InitServerSocket(ServerSocket socket, int port) throws IOException
+	{
+		socket.setReuseAddress(true);
+		socket.bind(new InetSocketAddress(port));
 	}
 }

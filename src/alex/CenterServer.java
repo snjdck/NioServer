@@ -1,31 +1,29 @@
 package alex;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashMap;
 import java.util.HashSet;
+
+import snjdck.util.SocketFactory;
 
 import alex.nio.io.PacketReader;
 import alex.packet.PacketQueue;
-
+import alex.router.RouterDict;
 
 public class CenterServer
 {
-	final HashMap<Integer, HashSet<Socket>> handlerDict;
+	final RouterDict handlerDict;
 	final PacketQueue packetList;
 	
 	public CenterServer(int port)
 	{
-		handlerDict = new HashMap<Integer, HashSet<Socket>>();
+		handlerDict = new RouterDict();
 		packetList = new PacketQueue();
 		RunThread(new WriteThread());
 		
 		try {
-			ServerSocket server = new ServerSocket();
-			server.setReuseAddress(true);
-			server.bind(new InetSocketAddress(port));
+			ServerSocket server = SocketFactory.CreateServerSocket(port);
 			for(;;){
 				Socket client = server.accept();
 				RunThread(new ReadThread(client));
@@ -37,19 +35,7 @@ public class CenterServer
 	
 	void onClientDisconnect(Socket socket)
 	{
-		synchronized (handlerDict) {
-			for(HashSet<Socket> handlerList : handlerDict.values()){
-				handlerList.remove(socket);
-			}
-		}
-	}
-	
-	HashSet<Socket> getSocketSet(int msgId)
-	{
-		if(!handlerDict.containsKey(msgId)){
-			handlerDict.put(msgId, new HashSet<Socket>());
-		}
-		return handlerDict.get(msgId);
+		handlerDict.removeAll(socket);
 	}
 	
 	static int ReadShort(byte[] packet, int offset)
@@ -87,7 +73,7 @@ public class CenterServer
 				for(;;){
 					reader.doRecv();
 					while(reader.hasPacket()){
-						onPacketRecv(reader.shiftPacket());
+						handleMsg(reader.shiftPacket());
 					}
 				}
 			} catch (IOException e) {
@@ -96,13 +82,7 @@ public class CenterServer
 			}
 		}
 		
-		void onPacketRecv(byte[] packet) {
-			if(handleMsg(packet)){
-				packetList.put(packet);
-			}
-		}
-		
-		boolean handleMsg(byte[] packet)
+		void handleMsg(byte[] packet)
 		{
 			int msgId = GetPacketId(packet);
 			int offset = 6;
@@ -111,21 +91,18 @@ public class CenterServer
 			case 1:
 				while(offset < packet.length){
 					msgId = ReadShort(packet, offset);
-					synchronized (handlerDict) {
-						getSocketSet(msgId).add(socket);
-					}
+					handlerDict.add(msgId, socket);
 				}
-				return false;
+				break;
 			case 2:
 				while(offset < packet.length){
 					msgId = ReadShort(packet, offset);
-					synchronized (handlerDict) {
-						getSocketSet(msgId).remove(socket);
-					}
+					handlerDict.remove(msgId, socket);
 				}
-				return false;
+				break;
+			default:
+				packetList.put(packet);
 			}
-			return true;
 		}
 	}
 	
@@ -134,11 +111,6 @@ public class CenterServer
 		@Override
 		public void run()
 		{
-			onRun();
-		}
-		
-		void onRun()
-		{
 			HashSet<Socket> handlerList = new HashSet<Socket>();
 			for(;;){
 				byte[] packet = packetList.take();
@@ -146,10 +118,7 @@ public class CenterServer
 				if(msgId <= 0){
 					continue;
 				}
-				synchronized (handlerDict) {
-					handlerList.addAll(getSocketSet(msgId));
-					handlerList.addAll(getSocketSet(0));
-				}
+				handlerDict.getHandlerSet(msgId, handlerList);
 				for(Socket socket : handlerList){
 					try {
 						socket.getOutputStream().write(packet);

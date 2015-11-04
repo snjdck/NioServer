@@ -5,9 +5,10 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
-public class HeartBeatServer {
-
-	public HeartBeatServer() {
+public class HeartBeatServer
+{
+	public HeartBeatServer()
+	{
 		Socket socket = new Socket();
 		try {
 			socket.connect(new InetSocketAddress("127.0.0.1", 7410));
@@ -22,5 +23,4 @@ public class HeartBeatServer {
 			e.printStackTrace();
 		}
 	}
-
 }
