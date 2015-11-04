@@ -11,23 +11,22 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import alex.nio.IoSession;
 import alex.nio.io.PacketReader;
+import alex.packet.PacketQueue;
 
 
 public class GateServer
 {
 	Selector selector;
 	
-	final BlockingQueue<byte[]> packetList;
+	final PacketQueue packetList;
 	final Socket socket;
 	
 	public GateServer(int port)
 	{
-		packetList = new LinkedBlockingQueue<byte[]>();
+		packetList = new PacketQueue();
 		
 		socket = new Socket();
 		try {
@@ -45,8 +44,6 @@ public class GateServer
 			}
 		}catch(IOException e){
 			e.printStackTrace();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
 		}
 	}
 
@@ -62,7 +59,7 @@ public class GateServer
 		registerToSelector(serverSocketChannel, SelectionKey.OP_ACCEPT);
 	}
 
-	void select() throws IOException, InterruptedException
+	void select() throws IOException
 	{
 		selector.select();
 		Iterator<SelectionKey> it = selector.selectedKeys().iterator();
@@ -73,7 +70,7 @@ public class GateServer
 		}
 	}
 	
-	void handleSelectionKey(SelectionKey selectionKey) throws IOException, InterruptedException
+	void handleSelectionKey(SelectionKey selectionKey) throws IOException
 	{
 		if(selectionKey.isValid() && selectionKey.isReadable()){
 			IoSession session = (IoSession)selectionKey.attachment();
@@ -93,7 +90,7 @@ public class GateServer
 		}
 	}
 	
-	void addSocketChannel(SocketChannel socketChannel) throws IOException, InterruptedException
+	void addSocketChannel(SocketChannel socketChannel) throws IOException
 	{
 		SelectionKey selectionKey = registerToSelector(socketChannel, SelectionKey.OP_READ);
 		IoSession session = new IoSession(selectionKey);
@@ -107,7 +104,7 @@ public class GateServer
 		return channel.register(selector, ops);
 	}
 	
-	void __onRecvClientPacket(IoSession session) throws InterruptedException
+	void __onRecvClientPacket(IoSession session)
 	{
 		while(session.packetReader.hasPacket()){
 			byte[] packet = session.packetReader.shiftPacket();
@@ -115,7 +112,7 @@ public class GateServer
 		}
 	}
 	
-	void __onClientConnected() throws InterruptedException
+	void __onClientConnected()
 	{
 		packetList.put(null);
 	}
@@ -155,14 +152,12 @@ public class GateServer
 		{
 			try {
 				onRun();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
+			}catch (IOException e) {
 				e.printStackTrace();
 			} 
 		}
 		
-		void onRun() throws InterruptedException, IOException
+		void onRun() throws IOException
 		{
 			OutputStream outputStream = socket.getOutputStream();
 			for(;;){

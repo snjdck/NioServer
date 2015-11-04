@@ -1,28 +1,25 @@
 package alex;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import alex.nio.io.PacketReader;
+import alex.packet.PacketQueue;
 
 
 public class CenterServer
 {
 	final HashMap<Integer, HashSet<Socket>> handlerDict;
-	final BlockingQueue<byte[]> packetList;
+	final PacketQueue packetList;
 	
 	public CenterServer(int port)
 	{
 		handlerDict = new HashMap<Integer, HashSet<Socket>>();
-		packetList = new LinkedBlockingQueue<byte[]>();
+		packetList = new PacketQueue();
 		RunThread(new WriteThread());
 		
 		try {
@@ -100,12 +97,8 @@ public class CenterServer
 		}
 		
 		void onPacketRecv(byte[] packet) {
-			try {
-				if(handleMsg(packet)){
-					packetList.put(packet);
-				}
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+			if(handleMsg(packet)){
+				packetList.put(packet);
 			}
 		}
 		
@@ -141,14 +134,10 @@ public class CenterServer
 		@Override
 		public void run()
 		{
-			try {
-				onRun();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+			onRun();
 		}
 		
-		void onRun() throws InterruptedException
+		void onRun()
 		{
 			HashSet<Socket> handlerList = new HashSet<Socket>();
 			for(;;){

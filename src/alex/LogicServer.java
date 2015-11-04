@@ -4,19 +4,18 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import alex.nio.io.PacketReader;
+import alex.packet.PacketQueue;
 
 
 public class LogicServer {
 
-	final BlockingQueue<byte[]> packetList;
+	final PacketQueue packetList;
 	final Socket socket;
 	
 	public LogicServer() {
-		packetList = new LinkedBlockingQueue<byte[]>();
+		packetList = new PacketQueue();
 		
 		socket = new Socket();
 		PacketReader reader = new PacketReader(socket, 0x20000);
@@ -44,14 +43,12 @@ public class LogicServer {
 		{
 			try {
 				onRun();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
+			}catch (IOException e) {
 				e.printStackTrace();
 			} 
 		}
 		
-		void onRun() throws InterruptedException, IOException
+		void onRun() throws IOException
 		{
 			OutputStream outputStream = socket.getOutputStream();
 			for(;;){
