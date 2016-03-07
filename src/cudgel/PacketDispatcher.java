@@ -23,8 +23,8 @@ public class PacketDispatcher
 	
 	public void dispatch(byte[] packet)
 	{
-		int msgId = packet[2] << 8 | packet[3];
-		int clientId = packet[4] << 8 | packet[5];
+		int msgId	 = PacketUtil.ReadShort(packet, 2);
+		int clientId = PacketUtil.ReadShort(packet, 4);
 		PacketHandler handler = handlerDict.get(msgId);
 		if(handler == null){
 			System.out.println("handler not set" + msgId);

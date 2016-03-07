@@ -9,6 +9,7 @@ import java.nio.ByteBuffer;
 
 import snjdck.ioc.Injector;
 
+import cudgel.ClientManager;
 import cudgel.PacketDispatcher;
 import cudgel.PacketSender;
 
@@ -31,6 +32,7 @@ public class LogicServer
 	public LogicServer(String host, int port)
 	{
 		injector.mapValue(PacketSender.class, packetSender);
+		injector.mapSingleton(ClientManager.class);
 		try{
 			socket.connect(new InetSocketAddress(host, port));
 			ByteBuffer buffer = ByteBuffer.allocate(7);
