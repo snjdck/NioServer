@@ -2,5 +2,5 @@ package cudgel;
 
 public interface PacketHandler
 {
-	void exec();
+	void exec(int clientId, byte[] packet);
 }

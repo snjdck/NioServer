@@ -7,7 +7,10 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 
+import snjdck.ioc.Injector;
+
 import cudgel.PacketDispatcher;
+import cudgel.PacketSender;
 
 public class LogicServer
 {
@@ -20,12 +23,20 @@ public class LogicServer
 	final PacketQueue		packetSendQueue	= new PacketQueue();
 	final Socket			socket			= new Socket();
 	final ByteBuffer		recvBuffer		= ByteBuffer.allocate(0x20000);
-	final PacketDispatcher	dispatcher		= new PacketDispatcher();
+	
+	final Injector			injector		= new Injector();
+	final PacketDispatcher	dispatcher		= new PacketDispatcher(injector);
+	final PacketSender		packetSender	= new PacketSender(packetSendQueue);
 
 	public LogicServer(String host, int port)
 	{
+		injector.mapValue(PacketSender.class, packetSender);
 		try{
 			socket.connect(new InetSocketAddress(host, port));
+			ByteBuffer buffer = ByteBuffer.allocate(7);
+			buffer.putShort((short)buffer.capacity());
+			buffer.put("logic".getBytes("UTF8"));
+			socket.getOutputStream().write(buffer.array());
 			new HandlerInit(dispatcher);
 			init();
 		}catch(IOException e){
@@ -61,6 +72,7 @@ public class LogicServer
 						recvBuffer.position(), recvBuffer.remaining());
 				if(nBytesRead <= 0)
 					return;
+				recvBuffer.position(recvBuffer.position()+nBytesRead);
 				recvBuffer.flip();
 				int offset = 0;
 				for(;;){
