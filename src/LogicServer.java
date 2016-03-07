@@ -1,17 +1,18 @@
-import alex.packet.PacketQueue;
+import static java.lang.System.arraycopy;
+import static java.util.Arrays.copyOfRange;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.nio.ByteBuffer;
 
 import snjdck.ioc.Injector;
-
+import alex.packet.PacketQueue;
 import cudgel.ClientManager;
 import cudgel.PacketDispatcher;
 import cudgel.PacketSender;
+import cudgel.PacketUtil;
 
 public class LogicServer
 {
@@ -23,7 +24,7 @@ public class LogicServer
 	final PacketQueue		packetRecvQueue	= new PacketQueue();
 	final PacketQueue		packetSendQueue	= new PacketQueue();
 	final Socket			socket			= new Socket();
-	final ByteBuffer		recvBuffer		= ByteBuffer.allocate(0x20000);
+	final byte[]			recvBuffer		= new byte[0x20000];
 	
 	final Injector			injector		= new Injector();
 	final PacketDispatcher	dispatcher		= new PacketDispatcher(injector);
@@ -35,10 +36,7 @@ public class LogicServer
 		injector.mapSingleton(ClientManager.class);
 		try{
 			socket.connect(new InetSocketAddress(host, port));
-			ByteBuffer buffer = ByteBuffer.allocate(7);
-			buffer.putShort((short)buffer.capacity());
-			buffer.put("logic".getBytes("UTF8"));
-			socket.getOutputStream().write(buffer.array());
+			socket.getOutputStream().write(PacketUtil.CreateNamePacket("logic"));
 			new HandlerInit(dispatcher);
 			init();
 		}catch(IOException e){
@@ -69,29 +67,29 @@ public class LogicServer
 
 		void onRun(InputStream inputStream) throws IOException
 		{
+			int begin = 0;
 			for(;;){
-				int nBytesRead = inputStream.read(recvBuffer.array(),
-						recvBuffer.position(), recvBuffer.remaining());
+				int nBytesRead = inputStream.read(recvBuffer, begin, recvBuffer.length - begin);
 				if(nBytesRead <= 0)
 					return;
-				recvBuffer.position(recvBuffer.position()+nBytesRead);
-				recvBuffer.flip();
-				int offset = 0;
+				int end = begin + nBytesRead;
+				begin = 0;
 				for(;;){
-					if(recvBuffer.remaining() < 2)
+					if(end - begin < 2)
 						break;
-					int packetLen = recvBuffer.getShort(offset) & 0xFFFF;
-					if(recvBuffer.remaining() < packetLen)
+					int packetLen = PacketUtil.ReadShort(recvBuffer, begin);
+					if(end - begin < packetLen)
 						break;
-					byte[] packet = new byte[packetLen];
-					recvBuffer.get(packet);
-					packetRecvQueue.put(packet);
-					offset += packetLen;
+					packetRecvQueue.put(copyOfRange(recvBuffer, begin, begin + packetLen));
+					begin += packetLen;
 				}
-				if(recvBuffer.hasRemaining()){
-					recvBuffer.compact();
+				if(begin >= end){
+					begin = 0;
+				}else if(begin <= 0){
+					begin = end;
 				}else{
-					recvBuffer.clear();
+					arraycopy(recvBuffer, begin, recvBuffer, 0, end - begin);
+					begin = end - begin;
 				}
 			}
 		}
