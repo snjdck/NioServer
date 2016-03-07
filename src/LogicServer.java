@@ -7,56 +7,58 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 
+import cudgel.PacketDispatcher;
+
 public class LogicServer
 {
-	public static void main(String[] args) {
+	public static void main(String[] args)
+	{
 		new LogicServer("127.0.0.1", 7410);
 	}
-	
-	final PacketQueue packetRecvQueue = new PacketQueue();
-	final PacketQueue packetSendQueue = new PacketQueue();
-	final Socket socket = new Socket();
-	final ByteBuffer recvBuffer = ByteBuffer.allocate(0x20000);
-	
+
+	final PacketQueue		packetRecvQueue	= new PacketQueue();
+	final PacketQueue		packetSendQueue	= new PacketQueue();
+	final Socket			socket			= new Socket();
+	final ByteBuffer		recvBuffer		= ByteBuffer.allocate(0x20000);
+	final PacketDispatcher	dispatcher		= new PacketDispatcher();
+
 	public LogicServer(String host, int port)
 	{
-		try {
+		try{
 			socket.connect(new InetSocketAddress(host, port));
+			new HandlerInit(dispatcher);
 			init();
-		} catch (IOException e) {
+		}catch(IOException e){
 			e.printStackTrace();
 		}
 	}
-	
+
 	void init()
 	{
 		new Thread(new ThreadRecv()).start();
 		new Thread(new ThreadSend()).start();
 		for(;;){
-			onPacketRecv(packetRecvQueue.take());
+			dispatcher.dispatch(packetRecvQueue.take());
 		}
 	}
-	
-	void onPacketRecv(byte[] packet)
-	{
-	}
-	
+
 	class ThreadRecv implements Runnable
 	{
 		@Override
 		public void run()
 		{
-			try {
+			try{
 				onRun(socket.getInputStream());
-			}catch (IOException e) {
+			}catch(IOException e){
 				e.printStackTrace();
-			} 
+			}
 		}
-		
+
 		void onRun(InputStream inputStream) throws IOException
 		{
 			for(;;){
-				int nBytesRead = inputStream.read(recvBuffer.array(), recvBuffer.position(), recvBuffer.remaining());
+				int nBytesRead = inputStream.read(recvBuffer.array(),
+						recvBuffer.position(), recvBuffer.remaining());
 				if(nBytesRead <= 0)
 					return;
 				recvBuffer.flip();
@@ -86,13 +88,13 @@ public class LogicServer
 		@Override
 		public void run()
 		{
-			try {
+			try{
 				onRun(socket.getOutputStream());
-			}catch (IOException e) {
+			}catch(IOException e){
 				e.printStackTrace();
-			} 
+			}
 		}
-		
+
 		void onRun(OutputStream outputStream) throws IOException
 		{
 			for(;;){
