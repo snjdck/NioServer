@@ -69,10 +69,10 @@ public class LogicServer
 		{
 			int begin = 0;
 			for(;;){
-				int nBytesRead = inputStream.read(recvBuffer, begin, recvBuffer.length - begin);
-				if(nBytesRead <= 0)
+				int end = inputStream.read(recvBuffer, begin, recvBuffer.length - begin);
+				if(end <= 0)
 					return;
-				int end = begin + nBytesRead;
+				end += begin;
 				begin = 0;
 				for(;;){
 					if(end - begin < 2)
