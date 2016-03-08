@@ -8,7 +8,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 
 import snjdck.ioc.Injector;
-import alex.packet.PacketQueue;
+import cudgel.PacketQueue;
 import cudgel.ClientManager;
 import cudgel.PacketDispatcher;
 import cudgel.PacketSender;
