@@ -1,3 +1,7 @@
 <handlers>
-	<handler id="0" class="packethandlers.DefaultPacketHandler" />
+	<handler id="0" class="packethandlers.HeartBeatHandler" />
+	<handler id="1" class="packethandlers.ClientConnectHandler" />
+	<handler id="2" class="packethandlers.ClientDisconnectHandler" />
+	<handler id="101" class="packethandlers.TestHanler" />
+	<handler id="1001" class="packethandlers.Test2Handler" />
 </handlers>

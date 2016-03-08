@@ -34,10 +34,10 @@ public class LogicServer
 	{
 		injector.mapValue(PacketSender.class, packetSender);
 		injector.mapSingleton(ClientManager.class);
+		HandlerInit.Init(dispatcher, "handler_config.xml");
 		try{
 			socket.connect(new InetSocketAddress(host, port));
 			socket.getOutputStream().write(PacketUtil.CreateNamePacket("logic"));
-			new HandlerInit(dispatcher);
 			init();
 		}catch(IOException e){
 			e.printStackTrace();
