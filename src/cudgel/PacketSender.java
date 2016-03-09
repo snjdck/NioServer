@@ -1,7 +1,5 @@
 package cudgel;
 
-import alex.packet.PacketQueue;
-
 public class PacketSender
 {
 	final PacketQueue packetSendQueue;

@@ -8,19 +8,14 @@ import flex.messaging.io.SerializationContext;
 import flex.messaging.io.amf.Amf3Input;
 import flex.messaging.io.amf.Amf3Output;
 
-final public class Amf3
+final public class Amf
 {
-	private final SerializationContext context;
+	static private final SerializationContext context = new SerializationContext();
+	static private final Amf3Output output = new Amf3Output(context);
+	static private final Amf3Input  input  = new Amf3Input (context);
 	
-	public Amf3()
+	static public byte[] Encode(Object object)
 	{
-		context = new SerializationContext();
-	}
-	
-	public byte[] encode(Object object)
-	{
-		Amf3Output output = new Amf3Output(context);
-		
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		output.setOutputStream(stream);
 		
@@ -34,10 +29,8 @@ final public class Amf3
 		return stream.toByteArray();
 	}
 	
-	public Object decode(byte[] buffer)
+	static public Object Decode(byte[] buffer)
 	{
-		Amf3Input input = new Amf3Input(context);
-		
 		ByteArrayInputStream stream = new ByteArrayInputStream(buffer);
 		input.setInputStream(stream);
 		
